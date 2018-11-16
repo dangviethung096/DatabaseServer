@@ -75,7 +75,8 @@ void * thread_function(void *arg)
             if(events[count].events & EPOLLIN)
             {
                 // receive request from client
-                int num_rev = recv(events[count].data.fd, buffer, BUFFER_SIZE, 0);
+                // int num_rev = 
+                recv(events[count].data.fd, buffer, BUFFER_SIZE, 0);
                 if(strncmp(buffer, STRING_END_CONNECT, LENGTH_END_CONNECT) == 0)
                 {
                    // Delete socket out epoll_fd
@@ -89,8 +90,7 @@ void * thread_function(void *arg)
             }
         }
     }
-
-    
+    return;
 }
 /* 
     FUNCTION : listen_clients
