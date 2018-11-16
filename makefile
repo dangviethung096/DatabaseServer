@@ -1,8 +1,8 @@
 #make file
 ROOT_PATH=${PWD}
-CLIENT_PATH=${ROOT_PATH}/client
-SERVER_PATH=${ROOT_PATH}/server
-LIB_PATH=${ROOT_PATH}/lib
+CLIENT_PATH=${ROOT_PATH}/src/client
+SERVER_PATH=${ROOT_PATH}/src/server
+LIB_PATH=${ROOT_PATH}/src/lib
 BIN_PATH=${ROOT_PATH}/bin
 
 CC=gcc
