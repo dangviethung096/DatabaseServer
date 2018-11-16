@@ -90,7 +90,8 @@ void * thread_function(void *arg)
             }
         }
     }
-    return;
+    // end function
+    pthread_exit(NULL);
 }
 /* 
     FUNCTION : listen_clients
