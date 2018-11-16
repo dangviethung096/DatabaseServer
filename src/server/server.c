@@ -13,6 +13,7 @@
 
 
 char buffer[BUFFER_SIZE];
+
 struct epoll_event events[EPOLL_MAX_EVENT];
 pid_t children_process[MAX_CHILDREN_PROCESS];
 int server_fd, epoll_fd;
