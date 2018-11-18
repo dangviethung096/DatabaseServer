@@ -1,5 +1,5 @@
 .vscode
-bin/client
-bin/server
-
+*.out
+*.o
+bin/*
 
