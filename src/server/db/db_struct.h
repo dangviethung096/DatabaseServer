@@ -10,7 +10,7 @@
 #include <stdio.h>
 
 typedef struct {
-
+    
 }hash_table;
 
 struct db_file_info {
@@ -20,20 +20,6 @@ struct db_file_info {
 };
 
 typedef struct db_file_info * DATABASE;
-
-struct table_info{
-    char *name;
-    int size;
-};
-
-typedef struct table_info table_t;
-
-struct db_store_info{
-    char *name;
-    int db_size;
-    int num_table;
-    struct table_info *table_list;
-};
 
 typedef struct {
     char *val;
