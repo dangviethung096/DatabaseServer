@@ -2,6 +2,12 @@
 
 #define DB_ALLOC_H
 
-void * db_alloc(int size);
+#include <stdlib.h>
+
+#define db_alloc(size)      \
+            malloc((size_t) size)
+
+#define db_free(ptr)        \
+            free((void *) ptr)
 
 #endif
