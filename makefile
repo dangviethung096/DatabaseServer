@@ -18,12 +18,10 @@ server: ${LIB_PATH}/constants.h ${SERVER_PATH}/server.c
 client: ${LIB_PATH}/constants.h ${CLIENT_PATH}/client.c
 	$(CC) -Wall -g ${CLIENT_PATH}/client.c -o ${BIN_PATH}/client
 
-${OBJECT_PATH}/db_alloc.o: ${DB_SOURCE_PATH}/db_alloc.c ${DB_SOURCE_PATH}/db_alloc.h
-	$(CC) -c ${DB_SOURCE_PATH}/db_alloc.c -o ${OBJECT_PATH}/db_alloc.o
 
-MACRO_T_DB_OPEN=-DDB_TRACE_ENABLE
-t_db_open: ${TEST_PATH}/t_db_open.c ${OBJECT_PATH}/db_alloc.o
-	$(CC) -Wall -g  ${TEST_PATH}/t_db_open.c ${OBJECT_PATH}/db_alloc.o -o ${BIN_PATH}/t_db_open.out ${MACRO_T_DB_OPEN}
+MACRO_T_DB_OPEN=-DDB_TRACE_ENABLE -DDB_ERROR_TRACE_ENABLE
+t_db_open: ${TEST_PATH}/t_db_open.c
+	$(CC) -Wall -g  ${TEST_PATH}/t_db_open.c -o ${BIN_PATH}/t_db_open.out ${MACRO_T_DB_OPEN}
 
 
 
