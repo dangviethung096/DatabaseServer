@@ -5,12 +5,16 @@
 
 int main()
 {
-    DATABASE db = db_open("hello", DB_CREATE);
+    DATABASE db = db_open("hello", "", DB_CREATE);
+    
     if(db != NULL)
     {
         printf("Success!\n");
     }else{
+        DB_TRACE(("Error_no: %s\n", db_error_str[db_error_no]));
         printf("Fail!\n");
+        return 0;
     }
     db_close(db);
+    return 1;
 }
