@@ -12,5 +12,11 @@
 void db_close(DATABASE db)
 {
     DB_TRACE(("Close db!\n"));
-    free(db);
+    // Mem in database_name
+    db_free(db->database_name);
+    db_free(db->tables);
+    // Close file descriptor
+    close(db->fd);
+    // Mem in database info
+    db_free(db);
 }
