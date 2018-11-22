@@ -8,15 +8,34 @@
 #ifndef DB_DEF_H
 #define DB_DEF_H
 
-#include "db_def.h"
+#include <unistd.h>
+#include <sys/types.h>
+#include "db_struct.h"
 
-#define DB_MAX_LENGTH_DATABASE_PATH 50
+#define DB_OFF_T_SIZE sizeof(off_t)
+#define DB_TABLE_INFO_SIZE sizeof(db_table_info)
+#define DB_INT_SIZE sizeof(int)
+
+#define DB_MAX_LENGTH_DATABASE_PATH 256
+#define MAX_ROWS_IN_TABLE 4096
+#define MAX_FIELDS_IN_TABLE 1024
+#define MAX_INDEX_FIELDS 4
+
+#define MAX_LENGTH_DB_NAME 32
 
 #define DB_OPEN 0
 #define DB_CREATE 1
 #define DB_REMOVE 2
 
+
 #define DB_SIZE_DATABASE_TYPE sizeof(struct db_file_info)
+#define DB_SCHEMA_SIZE sizeof(db_schema);
+
+#define DB_BEGIN_FD SEEK_SET
+#define DB_CURRENT_FD SEEK_CUR
+#define DB_END_FD           SEEK_END
+
+#define DB_NULL ((void *)0)
 
 /* Start: Trace in database */
 #ifdef DB_TRACE_ENABLE
@@ -30,31 +49,13 @@
 #endif
 /* End: Trace in database */
 
-/* Start: Define error code */
-#define DB_NO_ERROR     0
-
-/* End: Define error code */
-
-
-/* Start: Error trace in database */
-#ifdef  DB_ERROR_TRACE_ENABLE
-
-#define DB_SET_ERROR(error_no) /
-        {
-            db_error_no = error_no  /
-        }
-#define DB_RESET_ERROR          /
-        {                       /
-            db_error_no = DB_NO_ERROR      /
-        }           
-
-#else
-
-#define DB_RESET_ERROR
-#define DB_SET_ERROR(error_no)
-
-#endif
-/* End: Error trace in database */
+/* Start: define position in database */
+#define DB_POS_NAME_DATABASE 0
+#define DB_POS_NUMBER_TABLE         \
+            DB_POS_NAME_DATABASE + MAX_LENGTH_DB_NAME
+#define DB_POS_TABLE_POS            \
+            DB_POS_NUMBER_TABLE + DB_INT_SIZE            
+/* End: define position in database  */
 
 /* End DB_DEF_H */
 #endif
