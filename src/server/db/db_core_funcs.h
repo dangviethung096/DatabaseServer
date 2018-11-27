@@ -11,7 +11,9 @@
 #define db_strlen(str)                      \
             strlen((const char *) str)
 
-
+long int db_find_nearest_prime_number(long int input);
+#define DB_FIND_INT_PRIME_NUMBER(input)            \
+            (int) db_find_nearest_prime_number((long int) input)
 /* Start: Functions with file descriptor */
 #define db_seek(fd, off_set, whence)        \
             lseek(fd, off_set, whence)
