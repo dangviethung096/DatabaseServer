@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <error.h>
 /* 
         Function: db_open_file
         Params: file,
@@ -23,7 +24,7 @@
  */
 static inline int db_open_file(char *file,int flag, int mode)
 {
-    // DB_TRACE(("file = %s\nflag = %d\nmode = %d\n", file, flag, mode));
+    DB_TRACE(("DB:db_open_file:file = %s,flag = %d,mode = %d\n", file, flag, mode));
     return open(file, flag, mode);
 }
 /* 
@@ -64,9 +65,10 @@ DATABASE db_open(char *db_name, char *db_path, int flag)
     }
     // Get descriptor in database
     char db_file[DB_MAX_LENGTH_DATABASE_PATH];
-    sprintf(db_file, "%s%s", db_path, db_file);
+    sprintf(db_file, "%s%s", db_path, db_name);
 
     db_fd = db_open_file(db_file, open_flag, mode);
+    DB_TRACE(("DB:db_open: file descriptor: %d\n", db_fd));
     if(db_fd == -1)
     {
         DB_TRACE(("open file error!\n"));
@@ -74,7 +76,8 @@ DATABASE db_open(char *db_name, char *db_path, int flag)
     }
     // Alloc memory for data
     db = (DATABASE) db_alloc(DB_SIZE_DATABASE_TYPE);
-
+    // Assing file descriptor in database
+    db->fd = db_fd;
     //Create database
     if(flag == DB_CREATE)
     {
@@ -83,69 +86,109 @@ DATABASE db_open(char *db_name, char *db_path, int flag)
         // Write name in database
         if(db_seek(db->fd, DB_POS_NAME_DATABASE, DB_BEGIN_FD) == -1)
         {
-            
             DB_SET_ERROR(DB_SEEK_FD_FAIL);
             return DB_NULL;
         }
-        DB_TRACE(("DB:db_open: seek to name_db!\n"));
+        DB_TRACE(("DB:db_open:write:seek to name_db!\n"));
 
         // Check length of db_name
-        if(db_strlen(db_name) > MAX_LENGTH_DB_NAME)
+        if(db_strlen(db_name) > DB_MAX_LENGTH_DB_NAME)
         {
             DB_SET_ERROR(DB_OUT_OF_BOUNDS);
             return NULL;
         }
+
+        DB_TRACE(("DB:db_open:write:db_name: %s\n", db_name));
         ret_val = db_write(db->fd, db_name, db_strlen(db_name));
-        if(ret_val != db_strlen(db_name) || ret_val != MAX_LENGTH_DB_NAME)
+        if(ret_val != db_strlen(db_name))
         {
             DB_SET_ERROR(DB_WRITE_WRONG);
             return DB_NULL;
+        }else{
+            ret_val = db_write(db_fd, "\0", 1);
+            if(ret_val != 1)
+            {
+                DB_SET_ERROR(DB_WRITE_WRONG);
+                return DB_NULL;
+            }
         }
-        DB_TRACE(("DB:db_open: get name_db!\n"));
         // Write number table in database
+        if(db_seek(db->fd, DB_POS_NUMBER_TABLE, DB_BEGIN_FD) == -1)
+        {
+            DB_SET_ERROR(DB_SEEK_FD_FAIL);
+            return DB_NULL;
+        }
+        DB_TRACE(("DB:db_open::write:DB_POS_NUMBER_TABLE = %d\n", DB_POS_NUMBER_TABLE));
+        // Because this is new db, number table is 0
+        int num_table = 0;
+        ret_val = db_write(db->fd, &num_table, DB_INT_SIZE);
+        if(ret_val != DB_INT_SIZE)
+        {
+            perror("write!");
+            DB_TRACE(("DB:db_open:write: ret_val = %d\n", ret_val));
+            DB_SET_ERROR(DB_WRITE_WRONG);
+            return DB_NULL;
+        }
+        db->last_position = db_seek(db->fd, DB_MAX_TABLE_IN_DATABASE * DB_OFF_T_SIZE, DB_BEGIN_FD);
+    }
+
+    
+    int ret_val, pos;
+    // Load databse name
+    {
+        pos = DB_POS_NAME_DATABASE;
         if(db_seek(db->fd, DB_POS_NAME_DATABASE, DB_BEGIN_FD) == -1)
         {
             DB_SET_ERROR(DB_SEEK_FD_FAIL);
             return DB_NULL;
         }
-        // Because this is new db, number table is 0
-        ret_val = db_write(db->fd, 0, DB_INT_SIZE);
-    }
-
-    // Load all data in db
-    {   
-        int ret_val, pos = 0;
-        db->fd = db_fd;
-        db_seek(db->fd, 0, DB_BEGIN_FD);
         // Read 32 byte name db
-        db->database_name = (char *) db_alloc(MAX_LENGTH_DB_NAME);
-        ret_val = db_read(db->fd, db->database_name, MAX_LENGTH_DB_NAME);
-        DB_TRACE(("DB:db_open:db_read: database name: %s", db->database_name));
+        db->database_name = (char *) db_alloc(DB_MAX_LENGTH_DB_NAME);
+        ret_val = db_read(db->fd, db->database_name, DB_MAX_LENGTH_DB_NAME);
+        DB_TRACE(("DB:db_open:db_read: database name: %s\n", db->database_name));
 
-        if(ret_val < 0 || ret_val > MAX_LENGTH_DB_NAME)
+        if(ret_val < 0 || ret_val > DB_MAX_LENGTH_DB_NAME)
         {
             DB_SET_ERROR(DB_READ_WRONG);
             return DB_NULL;
         }else{
             db->database_name[ret_val] = '\0';
         }
-        // Read all table in db
-        pos += MAX_LENGTH_DB_NAME;
-        db_seek(db->fd, pos, DB_BEGIN_FD);
+    }
+    
+    
+    {
+        // Read num table in db
+        pos = DB_POS_NUMBER_TABLE;
+        if(db_seek(db->fd, pos, DB_BEGIN_FD) == -1)
+        {
+            DB_SET_ERROR(DB_SEEK_FD_FAIL);
+            return DB_NULL;
+        }
 
         ret_val = db_read(db->fd, &(db->num_table), DB_INT_SIZE);
-        DB_TRACE(("DB:db_open:db_read: number table = %d", ret_val));
+        DB_TRACE(("DB:db_open:db_read: number table = %d\n", db->num_table));
         if(ret_val != DB_INT_SIZE)
         {
+            DB_TRACE(("DB:db_open:db_read: ret_val = %d\n", ret_val));
             DB_SET_ERROR(DB_READ_WRONG);
             return DB_NULL;
         }
-        // Alloc table
-        db->tables = (db_table_info *) db_alloc(db->num_table * DB_TABLE_INFO_SIZE);
+    }
 
-        pos += ret_val;
-        db_seek(db->fd, pos, DB_BEGIN_FD);
-        // Read info in table
+    // Alloc table
+    DB_TRACE(("DB:db_open:db_alloc: Alloc memory for table\n"));
+    db->tables = (db_table_info *) db_alloc(db->num_table * DB_TABLE_INFO_SIZE);
+    
+    // Read info in table
+    {
+        pos = DB_POS_FIRST_TABLE_POS;
+        if(db_seek(db->fd, pos, DB_BEGIN_FD) == -1)
+        {
+            DB_SET_ERROR(DB_SEEK_FD_FAIL);
+            return DB_NULL;
+        }
+
         int index;
         for(index = 0; index < db->num_table; index++)
         {
@@ -159,8 +202,8 @@ DATABASE db_open(char *db_name, char *db_path, int flag)
             }
             pos+=ret_val;
         }
-
     }
+    
 
     return db;
 }
