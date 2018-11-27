@@ -6,6 +6,7 @@
 
  */
 #ifndef DB_STRUCT_H
+
 #define DB_STRUCT_H
 
 #include <stdio.h>
@@ -27,10 +28,6 @@ typedef struct {
     int index;
 }db_field;
 
-typedef struct {
-    db_value_t * fields;
-}hash_row;
-
 
 typedef struct {
     U32bit id_table;
@@ -49,6 +46,8 @@ struct db_file_info {
     unsigned int num_table;
     // Schema in tables
     db_table_info * tables;
+    // End data
+    off_t last_position;
 };
 
 
@@ -56,4 +55,24 @@ typedef struct db_file_info * DATABASE;
 
 typedef U32bit db_return_t;
 
+
+/* Define struct data in hard drive */
+struct db_field_in_table_data
+{
+    char field[DB_MAX_LENGTH_FIELD_NAME];
+};
+
+struct db_table_data
+{
+    U32bit id_table;
+    char table_name[DB_MAX_LENGTH_TABLE_NAME];
+    db_field fields[DB_MAX_FIELDS_IN_TABLE];  
+};
+
+struct db_database_data
+{
+    char database_name[DB_MAX_LENGTH_DB_NAME];
+};
+
+/* End DB_STRUCT_H */
 #endif
