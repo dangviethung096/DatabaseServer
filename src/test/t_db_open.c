@@ -5,7 +5,7 @@
 
 int main()
 {
-    DATABASE db = db_open("hello", "", DB_CREATE);
+    DATABASE db = db_open("test_database", "../data/", DB_CREATE);
     
     if(db != NULL)
     {
