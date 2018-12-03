@@ -7,6 +7,8 @@
  */
 #include "db_struct.h"
 #include "db_def.h"
+#include "db_alloc.h"
+#include "db_global.h"
 #include <stdlib.h>
 
 void db_close(DATABASE db)

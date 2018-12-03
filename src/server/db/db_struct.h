@@ -12,8 +12,14 @@
 #include <stdio.h>
 #include "db_def.h"
 
-typedef unsigned int U32bit;
-typedef unsigned char U8bit;
+typedef unsigned int    U32bit;
+typedef unsigned char   U8bit;
+typedef unsigned char   db_flag_t;
+typedef unsigned int    db_index_t;
+typedef unsigned char   db_boolean_t;
+
+typedef long int        db_first_hash_ret_t;
+typedef int             db_second_hash_ret_t;
 
 typedef struct {
     char *val;
@@ -24,9 +30,9 @@ typedef struct {
 typedef db_key_t db_value_t;
 
 typedef struct {
-    char * field;
+    char * field_name;
     int index;
-}db_field;
+} db_field;
 
 
 typedef struct {
@@ -55,24 +61,77 @@ typedef struct db_file_info * DATABASE;
 
 typedef U32bit db_return_t;
 
+/* START:Define ERROR */
+enum db_error_no {
+    DB_NO_ERROR         =0,     //0
+    DB_READ_WRONG       = 1,
+    DB_WRITE_WRONG,             //2
+    DB_SEEK_FD_FAIL,            //3
+    DB_NULL_VALUE,              //4
+    DB_OUT_OF_BOUNDS    =11
+};
+/* END:Define ERROR */
 
+/* Never using this structs in program
+    This structs use for reference to data struct in disk */
 /* Define struct data in hard drive */
+
+
 struct db_field_in_table_data
 {
-    char field[DB_MAX_LENGTH_FIELD_NAME];
+    db_flag_t flag;
+    U8bit field_name[DB_MAX_LENGTH_FIELD_NAME];
+    db_index_t index;
+};
+
+/* size of db_first_row_data is sizeof(off_t) = 8 */
+struct db_first_row_data
+{
+    db_flag_t flag;
+};
+/* size of db_first_field_data is sizeof(off_t) = 8 */
+struct db_first_field_data
+{
+    db_flag_t flag;
+};
+
+struct db_row_data
+{
+    off_t fields[DB_MAX_FIELDS_IN_TABLE];
+};
+
+struct db_field_data
+{
+    db_value_t value[DB_MAX_ROWS_IN_BUCKET];
+};
+
+
+struct db_fields_bucket_data
+{
+    struct db_field_data fields[DB_MAX_FIELDS_IN_TABLE];
+};
+
+struct db_rows_bucket_data
+{
+    struct db_row_data rows[DB_MAX_ROWS_IN_BUCKET];
 };
 
 struct db_table_data
 {
     U32bit id_table;
-    char table_name[DB_MAX_LENGTH_TABLE_NAME];
+    U8bit table_name[DB_MAX_LENGTH_TABLE_NAME];
     db_field fields[DB_MAX_FIELDS_IN_TABLE];  
 };
 
 struct db_database_data
 {
-    char database_name[DB_MAX_LENGTH_DB_NAME];
+    U8bit database_name[DB_MAX_LENGTH_DB_NAME];
+    U32bit num_table;
+    off_t tables[DB_MAX_TABLE_IN_DATABASE];
+    off_t last_position;
 };
+
+
 
 /* End DB_STRUCT_H */
 #endif

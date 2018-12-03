@@ -10,6 +10,7 @@
 #include "db_alloc.h"
 #include "db_error.h"
 #include "db_core_funcs.h"
+#include "db_global.h"
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -129,12 +130,26 @@ DATABASE db_open(char *db_name, char *db_path, int flag)
             DB_SET_ERROR(DB_WRITE_WRONG);
             return DB_NULL;
         }
-        db->last_position = db_seek(db->fd, DB_MAX_TABLE_IN_DATABASE * DB_OFF_T_SIZE, DB_BEGIN_FD);
+        // Write last_position
+        off_t last_position = db_seek(db->fd, DB_POS_LAST_POSITION, DB_BEGIN_FD) + DB_OFF_T_SIZE;
+        DB_TRACE(("DB:db_open:write: last_position = %ld\n", last_position));
+        if(last_position - DB_OFF_T_SIZE == -1)
+        {
+            DB_SET_ERROR(DB_SEEK_FD_FAIL);
+            return DB_NULL;
+        }
+        
+        ret_val = db_write(db->fd, &last_position, DB_OFF_T_SIZE);
+        if(ret_val != DB_OFF_T_SIZE)
+        {
+            DB_SET_ERROR(DB_WRITE_WRONG);
+            return DB_NULL;
+        }
     }
 
-    
+    /* Read from db, info about database */
     int ret_val, pos;
-    // Load databse name
+    // Load database name
     {
         pos = DB_POS_NAME_DATABASE;
         if(db_seek(db->fd, DB_POS_NAME_DATABASE, DB_BEGIN_FD) == -1)
@@ -177,7 +192,7 @@ DATABASE db_open(char *db_name, char *db_path, int flag)
     }
 
     // Alloc table
-    DB_TRACE(("DB:db_open:db_alloc: Alloc memory for table\n"));
+    DB_TRACE(("DB:db_open:db_alloc: Alloc memory for all table\n"));
     db->tables = (db_table_info *) db_alloc(db->num_table * DB_TABLE_INFO_SIZE);
     
     // Read info in table
@@ -204,6 +219,19 @@ DATABASE db_open(char *db_name, char *db_path, int flag)
         }
     }
     
+    // Read last_position
+    if(db_seek(db->fd, DB_POS_LAST_POSITION, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return DB_NULL;
+    }
 
+    ret_val = db_read(db->fd, &(db->last_position), DB_OFF_T_SIZE);
+    if(ret_val != DB_OFF_T_SIZE)
+    {
+        DB_SET_ERROR(DB_READ_WRONG);
+        return DB_NULL;
+    }
+    DB_TRACE(("DB:db_open:db_read: last_position= %ld\n", db->last_position));
     return db;
 }

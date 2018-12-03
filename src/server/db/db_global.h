@@ -11,6 +11,7 @@
 
 #include "db_struct.h"
 
-extern U32bit db_error_no;
+extern enum db_error_no db_error_no;
+extern const char * db_error_str[];
 
 #endif
