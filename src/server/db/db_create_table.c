@@ -9,6 +9,8 @@
 #include "db_def.h"
 #include "db_core_funcs.h"
 #include "db_error.h"
+#include "db_hash_function.h"
+#include "db_global.h"
 #include <fcntl.h>
 #include <sys/stat.h>
 
@@ -20,13 +22,10 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
     ssize_t io_ret_val;
     int num_table = db->num_table;
     int now_id_table;
-    if(num_table == 0)
-    {
-        now_id_table = 1;
-    }else{
-        now_id_table = db->tables[db->num_table].id_table + 1;
-    }
+    off_t fields_bucket_pos;
 
+    // Reset db_error_no
+    DB_RESET_ERROR();
 
     // Check validate table
     if(db->num_table == DB_MAX_TABLE_IN_DATABASE)
@@ -35,21 +34,78 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
         return DB_NULL;
     }
     
-    /* Add new block to db (block contains buckets, table info) */
+    /* START: Add new block to db (block contains buckets, table info) */
+        
+    // Reset mem to 0 in db
+    if(db_seek(db->fd, pos_table, DB_BEGIN_FD) == -1)
     {
-        // Seek to new last position
-        new_last_pos = db_seek(db->fd, db->last_position + DB_SINGLE_TABLE_SIZE, DB_BEGIN_FD);
-        if(new_last_pos == -1)
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return DB_NULL;
+    }
+    int i;
+    char val = 0x00;
+    DB_TRACE(("DB:db_create_table:DB_SINGLE_TABLE_SIZE = %lu, DB_TABLE_DATA_SIZE = %lu\n", DB_SINGLE_TABLE_SIZE, DB_TABLE_DATA_SIZE));
+    for(i = 0; i < DB_TABLE_DATA_SIZE; i++)
+    {
+        io_ret_val = db_write(db->fd, &val, 1);
+        if(io_ret_val == -1)
         {
-            DB_SET_ERROR(DB_SEEK_FD_FAIL);
+            DB_SET_ERROR(DB_WRITE_WRONG);
             return DB_NULL;
         }
+    }
 
-        // Mark new last position
-        char end = '\0';
-        io_ret_val = db_read(db->fd, &end, 1);
+    // Set unused for rows bucket
+    if(db_seek(db->fd, pos_table + DB_POS_ROWS_BUCKET_IN_TABLE, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return DB_NULL;
+    }
+    off_t rows_bucket_pos = pos_table + DB_POS_ROWS_BUCKET_IN_TABLE;
+    DB_TRACE(("DB:db_create_table:Set unused in rows bucket at %ld\n", rows_bucket_pos));
+    for(i = 0; i < DB_MAX_ROWS_IN_BUCKET; i++)
+    {
+        db_flag_t flag = DB_FLAG_USED;
+        if(db_set_flag_in_rows_bucket(db->fd, rows_bucket_pos, i, flag) == DB_FAILURE)
+        {
+            return DB_NULL;
+        }
+    }
+
+    // Set unused for fields bucket
+    fields_bucket_pos = pos_table + DB_POS_FIELDS_BUCKET_IN_TABLE;
+
+    if(db_seek(db->fd, fields_bucket_pos, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return DB_NULL;
+    }
+    DB_TRACE(("DB:db_create_table:Set unused in fields bucket at %ld\n", pos_table + DB_POS_FIELDS_BUCKET_IN_TABLE));
+    for(i = 0; i < DB_MAX_FIELDS_IN_TABLE; i++)
+    {   
+        db_flag_t flag = DB_FLAG_NOT_USED;
+        if(db_set_flag_in_fields_bucket(db->fd, fields_bucket_pos, i, flag) == DB_FAILURE)
+        {
+            return DB_NULL;
+        }
+    }
+
+
+    // Seek to new last position
+
+    new_last_pos = db_seek(db->fd, pos_table + DB_SINGLE_TABLE_SIZE, DB_BEGIN_FD);
+    DB_TRACE(("DB:db_create_table:new_last_pos = %ld\n", new_last_pos));
+    if(new_last_pos == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return DB_NULL;
     }
     
+    char end = '\0';
+    io_ret_val = db_write(db->fd, &end, 1);
+
+
+    /* END: Add new block to db (block contains buckets, table info) */
 
     //Back to table_position
     if(db_seek(db->fd, pos_table, DB_BEGIN_FD) == -1)
@@ -64,8 +120,19 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
         DB_SET_ERROR(DB_SEEK_FD_FAIL);
         return DB_NULL;
     }
+
+    if(num_table == 0)
+    {
+        now_id_table = 1;
+    }else
+    {
+        now_id_table = db->tables[db->num_table].id_table + 1;
+    }
+
+    DB_TRACE(("DB:db_create_table:id_table = %d\n", now_id_table));
     io_ret_val = db_write(db->fd, &now_id_table, DB_INT_SIZE);
-    if(io_ret_val != DB_INT_SIZE){
+    if(io_ret_val != DB_INT_SIZE)
+    {
         DB_SET_ERROR(DB_WRITE_WRONG);
         return DB_NULL;
     }
@@ -76,12 +143,13 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
         DB_SET_ERROR(DB_SEEK_FD_FAIL);
         return DB_NULL;
     }
+
     if(db_strlen(table_name) > DB_MAX_LENGTH_TABLE_NAME)
     {
         DB_SET_ERROR(DB_OUT_OF_BOUNDS);
         return DB_NULL;
     }
-
+    DB_TRACE(("DB:db_create_table:table_name = %s\n", table_name));
     io_ret_val = db_write(db->fd, table_name, db_strlen(table_name));
     if(io_ret_val == -1)
     {
@@ -91,38 +159,102 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
 
     // Write fields in table
     off_t pos_first_field_in_table = pos_table + DB_POS_FIELDS_IN_TABLE;
-    if(db_seek(db->fd, pos_first_field_in_table, DB_CURRENT_FD) == -1)
-    {
-        DB_SET_ERROR(DB_OUT_OF_BOUNDS);
-        return DB_NULL;
-    }
+
+    // Write each field in table to database
     int index;
     for(index = 0; index < num_field; index++)
     {
-        // Write each field in table to database
-        int num_write = db_strlen(fields[index].field);
-        io_ret_val = db_write(db->fd, fields[index].field, num_write);
-        if(io_ret_val != num_write)
+        off_t field_pos = db_seek(db->fd, pos_first_field_in_table + index * DB_FIELD_IN_TABLE_SIZE , DB_BEGIN_FD);
+        // Write flag
+        db_flag_t flag = DB_FLAG_USED;
+        io_ret_val = db_write(db->fd, &flag, 1);
+        if(io_ret_val != 1)
         {
             DB_SET_ERROR(DB_WRITE_WRONG);
             return DB_NULL;
         }
         
-        if(db_seek(db->fd, pos_first_field_in_table + index * DB_FIELD_IN_TABLE_SIZE, DB_BEGIN_FD) == -1)
+        int num_write = db_strlen(fields[index].field_name) + 1;
+        DB_TRACE(("DB:db_create_table:field_name = %s\n", fields[index].field_name));
+        io_ret_val = db_write(db->fd, fields[index].field_name, num_write);
+        if(io_ret_val != num_write)
+        {
+            DB_SET_ERROR(DB_WRITE_WRONG);
+            return DB_NULL;
+        }
+
+        // Hashing to find index fd
+        db_key_t key;
+        key.val = fields[index].field_name;
+        key.size = db_strlen(key.val);
+        DB_TRACE(("DB:db_create_table:hashing index with key.val = %s, key.size = %d\n", key.val, key.size));
+        db_first_hash_ret_t hval = db_first_hash(key);
+        db_index_t first_idx = hval % DB_MAX_FIELDS_IN_TABLE;
+        DB_TRACE(("DB:db_create_table:first_idx = %d\n", first_idx));
+
+        if(db_is_field_in_fields_bucket_used(db->fd, fields_bucket_pos, first_idx) == DB_FALSE)
+        {
+            if(db_error_no != DB_NO_ERROR)
+            {
+                return DB_NULL;
+            }
+            // Add new field to here
+            fields[index].index = first_idx;
+
+        }else
+        {
+            int hval2 = 1 + hval % (DB_MAX_FIELDS_IN_TABLE);
+            int index = first_idx;
+            do
+            {
+                index = db_second_hash(hval2, DB_MAX_FIELDS_IN_TABLE, index);
+                DB_TRACE(("DB:db_create_table:index in second hash = %d\n", index));
+                if(db_is_field_in_fields_bucket_used(db->fd, fields_bucket_pos, index) == DB_FALSE)
+                {
+                    if(db_error_no != DB_NO_ERROR)
+                    {
+                        return DB_NULL;
+                    }
+                    // Add new field to here
+                    fields[index].index = first_idx;
+                    break;
+                }
+            }while(index != first_idx);
+        }
+
+        // Seek to index fd
+        
+        if(db_seek(db->fd, field_pos + DB_POS_INDEX_IN_FIELD_INFO, DB_BEGIN_FD) == -1)
         {
             DB_SET_ERROR(DB_SEEK_FD_FAIL);
             return DB_NULL;
         }
+
+        io_ret_val = db_write(db->fd, &(fields[index].index), DB_INDEX_T_SIZE);
+        if(io_ret_val != DB_INDEX_T_SIZE)
+        {
+            DB_SET_ERROR(DB_WRITE_WRONG);
+            return DB_NULL;
+        }
+
+        // Set field is used in fields bucket
+        flag = DB_FLAG_USED;
+        if(db_set_flag_in_fields_bucket(db->fd, fields_bucket_pos, fields[index].index, flag) == DB_FAILURE)
+        {
+            return DB_NULL;
+        }
     }
     // Write in rows bucket
-
+    
     // Write in fields bucket
 
 
     // Increase num_table
     db->num_table++;
     db->last_position = new_last_pos;
-
+    // Write new last position in db
+    
+    // Write position of table to database info
 
     return &(db->tables[num_table]);
 }

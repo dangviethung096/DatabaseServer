@@ -10,13 +10,11 @@
 
 
 #include "db_struct.h"
+#include "db_def.h"
 
-DATABASE db_open(char *db_name, char *db_path);
+DATABASE db_open(char *db_name, char *db_path, int flag);
+db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields, int num_field);
 void db_close(DATABASE db);
 
-void db_search(DATABASE db, db_key_t key);
-void db_insert(DATABASE db, db_key_t key, db_value_t value);
-void db_modify(DATABASE db, db_key_t key, db_value_t value);
-void db_delete(DATABASE db, db_key_t key);
 
 #endif
