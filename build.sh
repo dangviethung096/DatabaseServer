@@ -37,9 +37,10 @@ BUILD_DB()
 
 BUILD_T_DB_CREATE_TABLE()
 {
+	printf "\n\n=============================================================================\n"
 	echo "${CC} -c ${TEST_PATH}/t_db_create_table.c -o ${OBJECT_PATH}/t_db_create_table.o"
 	${CC} -c ${TEST_PATH}/t_db_create_table.c -o ${OBJECT_PATH}/t_db_create_table.o
-
+	printf "\n\n=============================================================================\n"
 	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_create_table.o -o ${BIN_PATH}/t_db_create_table.out"
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_create_table.o -o ${BIN_PATH}/t_db_create_table.out
 }
@@ -47,14 +48,34 @@ BUILD_T_DB_CREATE_TABLE()
 
 BUILD_T_DB_OPEN()
 {
-	${CC} ${FLAGS} ${TEST_PATH}/t_db_open.c -o ${BIN_PATH}/t_db_open.out ${MACRO_T_DB_OPEN}
+	printf "\n\n=============================================================================\n"
+	echo "${CC} -c ${TEST_PATH}/t_db_open.c -o ${OBJECT_PATH}/t_db_open.o"
+	${CC} -c ${TEST_PATH}/t_db_open.c -o ${OBJECT_PATH}/t_db_open.o
+	printf "\n\n=============================================================================\n"
+	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_open.o -o ${BIN_PATH}/t_db_open.out"
+	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_open.o -o ${BIN_PATH}/t_db_open.out
+}
+
+BUILD_T_DB_DEF()
+{
+	printf "\n\n=============================================================================\n"
+	echo "${CC} -c ${TEST_PATH}/t_db_def.c -o ${OBJECT_PATH}/t_db_def.o"
+	${CC} -c ${TEST_PATH}/t_db_def.c -o ${OBJECT_PATH}/t_db_def.o
+	printf "\n\n=============================================================================\n"
+	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_def.o -o ${BIN_PATH}/t_db_def.out"
+	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_def.o -o ${BIN_PATH}/t_db_def.out
 }
 
 BUILD_TEST()
 {
+	printf "\nBUILD_DB"
 	BUILD_DB
-	BUILD_T_DB_OPEN
+	printf "\nBUILD_T_DB_OPEN"
+	#BUILD_T_DB_OPEN
+	printf "\nBUILD_T_DB_CREATE_TABLE"
 	BUILD_T_DB_CREATE_TABLE
+	printf "\nBUILD_T_DB_DEF"
+	BUILD_T_DB_DEF
 }
 #####################################################
 #SECTION 3: RULES

@@ -76,6 +76,12 @@ enum db_error_no {
     This structs use for reference to data struct in disk */
 /* Define struct data in hard drive */
 
+struct db_value
+{
+    // struct store data
+    char row_id : 8;
+    char value[28];                 //Using 28 byte
+};
 
 struct db_field_in_table_data
 {
@@ -102,7 +108,7 @@ struct db_row_data
 
 struct db_field_data
 {
-    db_value_t value[DB_MAX_ROWS_IN_BUCKET];
+    struct db_value value[DB_MAX_ROWS_IN_BUCKET];
 };
 
 

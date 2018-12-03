@@ -28,6 +28,7 @@ int main()
             printf("Success\n");
         }else
         {
+            DB_TRACE(("Error: %s\n", db_error_str[db_error_no]));
             printf("Fail\n");
         }
     }

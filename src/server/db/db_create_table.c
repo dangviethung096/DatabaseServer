@@ -21,6 +21,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
     off_t new_last_pos;
     ssize_t io_ret_val;
     int num_table = db->num_table;
+    int index_table = db->num_table;
     int now_id_table;
     off_t fields_bucket_pos;
 
@@ -204,22 +205,22 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
         }else
         {
             int hval2 = 1 + hval % (DB_MAX_FIELDS_IN_TABLE);
-            int index = first_idx;
+            db_second_hash_ret_t second_index = first_idx;
             do
             {
-                index = db_second_hash(hval2, DB_MAX_FIELDS_IN_TABLE, index);
-                DB_TRACE(("DB:db_create_table:index in second hash = %d\n", index));
-                if(db_is_field_in_fields_bucket_used(db->fd, fields_bucket_pos, index) == DB_FALSE)
+                second_index = db_second_hash(hval2, DB_MAX_FIELDS_IN_TABLE, second_index);
+                DB_TRACE(("DB:db_create_table:index in second hash = %d\n", second_index));
+                if(db_is_field_in_fields_bucket_used(db->fd, fields_bucket_pos, second_index) == DB_FALSE)
                 {
                     if(db_error_no != DB_NO_ERROR)
                     {
                         return DB_NULL;
                     }
                     // Add new field to here
-                    fields[index].index = first_idx;
+                    fields[index].index = second_index;
                     break;
                 }
-            }while(index != first_idx);
+            }while(second_index != first_idx);
         }
 
         // Seek to index fd
@@ -229,14 +230,14 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
             DB_SET_ERROR(DB_SEEK_FD_FAIL);
             return DB_NULL;
         }
-
+        DB_TRACE(("DB:db_create_table:write index of field\n"));
         io_ret_val = db_write(db->fd, &(fields[index].index), DB_INDEX_T_SIZE);
         if(io_ret_val != DB_INDEX_T_SIZE)
         {
             DB_SET_ERROR(DB_WRITE_WRONG);
             return DB_NULL;
         }
-
+        /* Write in fields bucket */
         // Set field is used in fields bucket
         flag = DB_FLAG_USED;
         if(db_set_flag_in_fields_bucket(db->fd, fields_bucket_pos, fields[index].index, flag) == DB_FAILURE)
@@ -244,17 +245,61 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
             return DB_NULL;
         }
     }
-    // Write in rows bucket
+
+    /* Write new last position in db */
     
-    // Write in fields bucket
-
-
+    off_t pos = DB_POS_LAST_POSITION;
+    if(db_seek(db->fd, pos, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return DB_NULL;
+    }
+    
     // Increase num_table
     db->num_table++;
     db->last_position = new_last_pos;
-    // Write new last position in db
+    DB_TRACE(("DB:db_create_table:write last position: %ld\n", new_last_pos));
+    io_ret_val = db_write(db->fd, &db->last_position, DB_OFF_T_SIZE);
+    if(io_ret_val != DB_OFF_T_SIZE)
+    {
+        DB_SET_ERROR(DB_WRITE_WRONG);
+        return DB_NULL;
+    }
+
+
+    /* Write number table info to database info */
     
-    // Write position of table to database info
+    pos = DB_POS_NUMBER_TABLE;
+    if(db_seek(db->fd, pos, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return DB_NULL;
+    }
+    
+    // Increase number table index
+    db->num_table++;
+    DB_TRACE(("DB:db_create_table:write number table: %d\n", db->num_table));
+    io_ret_val = db_write(db->fd, &db->num_table, DB_OFF_T_SIZE);
+    if(io_ret_val != DB_OFF_T_SIZE)
+    {
+        DB_SET_ERROR(DB_WRITE_WRONG);
+        return DB_NULL;
+    }
+
+    /* Write position of table to database info */
+    pos = db_point_to_index_table_info_in_db(db->fd, db->num_table-1);
+    if(pos == -1)
+    {
+        return DB_NULL;
+    }
+
+    DB_TRACE(("DB:db_create_table:write position of table in database info: %ld\n", pos_table));
+    io_ret_val = db_write(db->fd, &pos_table, DB_OFF_T_SIZE);
+    if(io_ret_val != DB_OFF_T_SIZE)
+    {
+        DB_SET_ERROR(DB_WRITE_WRONG);
+        return DB_NULL;
+    }
 
     return &(db->tables[num_table]);
 }

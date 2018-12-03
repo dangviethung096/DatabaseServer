@@ -29,6 +29,7 @@ db_first_hash_ret_t db_first_hash(db_key_t key)
     if(hval == 0)
         hval += 1;
 
+    DB_TRACE(("DB:db_first_hash: hval = %ld\n", hval));
     return hval;
 }
 /* 
@@ -47,5 +48,6 @@ db_second_hash_ret_t db_second_hash(int hval2, int table_size, int index)
     else
         index -= hval2;
 
+    DB_TRACE(("DB:db_second_hash: index = %d\n", index));
     return index;
 }

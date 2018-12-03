@@ -25,6 +25,7 @@ off_t db_point_to_index_fields_bucket(int fd, off_t pos_fields_bucket, db_index_
 db_boolean_t db_get_flag_in_fields_bucket(int fd, off_t pos_fields_bucket, db_index_t index, db_flag_t * flag);
 db_boolean_t db_set_flag_in_fields_bucket(int fd, off_t pos_fields_bucket, db_index_t index, db_flag_t flag);
 
+off_t db_point_to_index_table_info_in_db(int fd, int index);
 /* Start: Functions with file descriptor */
 #define db_seek(fd, off_set, whence)        \
             lseek(fd, off_set, whence)

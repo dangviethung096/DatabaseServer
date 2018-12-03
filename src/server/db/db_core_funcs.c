@@ -330,3 +330,29 @@ db_boolean_t db_is_row_in_rows_bucket_used(int fd, off_t pos_rows_bucket, db_ind
     return DB_FALSE;
 }
 
+
+/* 
+    Function: db_point_to_index_table_info_in_db
+    Params: fd,
+            pos_rows_bucket,
+            index
+    Description: point fd to index of table info in database
+                 database have a array of poisition of table
+    Return value: -1 if error
+                  current position of fd if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+off_t db_point_to_index_table_info_in_db(int fd, int index)
+{
+
+    off_t pos = DB_POS_FIRST_TABLE_POS + index * DB_OFF_T_SIZE;
+    if(db_seek(fd, pos, DB_BEGIN_FD) == -1)
+    {
+        DB_TRACE(("DB:db_point_to_index_fields_bucket: seek_fail!\n"));
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return -1;
+    }
+
+    return pos;
+}

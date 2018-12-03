@@ -3,9 +3,10 @@
 #include "../server/db/db_struct.h"
 #include "../server/db/db_global.h"
 #include "../server/db/db_api.h"
+
 int main()
 {
-    DATABASE db = db_open("test_database", "../data/", DB_CREATE);
+    DATABASE db = db_open("test_database", "../data/", DB_OPEN);
     
     if(db != NULL)
     {
@@ -15,6 +16,8 @@ int main()
         printf("Fail!\n");
         return 0;
     }
+
+    /* Show num_table */
     db_close(db);
     return 1;
 }
