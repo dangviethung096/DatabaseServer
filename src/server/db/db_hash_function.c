@@ -8,8 +8,44 @@
  */
 #include "db_def.h"
 #include "db_struct.h"
-
-DB_HASH_RETURN db_first_hash(char * key)
+/* 
+    Function: db_first_hash
+    Params: key,
+            
+    Description: this is first hash function in double hasing
+        
+ */
+db_first_hash_ret_t db_first_hash(db_key_t key)
 {
+    long int hval = key.size;
     
+    int i;
+    for(i = key.size; i > 0; i--)
+    {
+        hval <<= 4;
+        hval += key.val[i];
+    }
+
+    if(hval == 0)
+        hval += 1;
+
+    return hval;
+}
+/* 
+    Function: db_second_hash
+    Params: hval2: hval2 = 1 + hval % (table_size - 2),
+            table_size,
+            index
+            
+    Description: this is second has in hash function
+        
+ */
+db_second_hash_ret_t db_second_hash(int hval2, int table_size, int index)
+{
+    if(index <= hval2) 
+        index = table_size + index - hval2;
+    else
+        index -= hval2;
+
+    return index;
 }
