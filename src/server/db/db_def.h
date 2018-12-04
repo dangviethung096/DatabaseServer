@@ -64,6 +64,9 @@
 #define DB_END_FD           SEEK_END
 
 #define DB_NULL ((void *)0)
+
+
+
 /* Define for boolean type */
 #define DB_FALSE            0
 #define DB_TRUE             1
