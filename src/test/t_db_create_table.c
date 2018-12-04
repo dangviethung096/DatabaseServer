@@ -20,8 +20,7 @@ int main()
     {
         
         db_field field[1];
-        field[0].field_name = (char *) malloc(8);
-        memcpy(field[0].field_name, "hung_id\0", 8);
+        field[0].field_name = "hung_id";
 
         if(db_create_table(db, "test_table", field, 1) != NULL)
         {

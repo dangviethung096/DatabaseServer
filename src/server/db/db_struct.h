@@ -38,8 +38,8 @@ typedef struct {
 typedef struct {
     U32bit id_table;
     char * table_name;
-    db_field fields;
-    U8bit  num_fields;
+    U8bit num_fields;
+    db_field * fields;
     U32bit num_rows;
     off_t position_table;
 } db_table_info;

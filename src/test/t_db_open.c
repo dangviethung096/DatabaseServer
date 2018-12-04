@@ -5,7 +5,7 @@
 #include "../server/db/db_api.h"
 int main()
 {
-    DATABASE db = db_open("test_database", "../data/", DB_CREATE);
+    DATABASE db = db_open("test_database", "../data/", DB_OPEN);
     
     if(db != NULL)
     {

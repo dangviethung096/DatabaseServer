@@ -20,7 +20,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
     off_t pos_table = db->last_position;
     off_t new_last_pos;
     ssize_t io_ret_val;
-    int num_table = db->num_table;
+    int num_table = db->num_table + 1;
     int index_table = db->num_table;
     int now_id_table;
     off_t fields_bucket_pos;
@@ -122,12 +122,12 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
         return DB_NULL;
     }
 
-    if(num_table == 0)
+    if(num_table == 1)
     {
         now_id_table = 1;
     }else
     {
-        now_id_table = db->tables[db->num_table].id_table + 1;
+        now_id_table = db->tables[index_table].id_table + 1;
     }
 
     DB_TRACE(("DB:db_create_table:id_table = %d\n", now_id_table));
@@ -274,8 +274,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
         return DB_NULL;
     }
     
-    // Increase num_table
-    db->num_table++;
+    
     db->last_position = new_last_pos;
     DB_TRACE(("DB:db_create_table:write last position: %ld\n", new_last_pos));
     io_ret_val = db_write(db->fd, &db->last_position, DB_OFF_T_SIZE);
@@ -285,6 +284,8 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
         return DB_NULL;
     }
 
+    /* Increase num_table */
+    db->num_table = num_table;
 
     /* Write number table info to database info */
     
@@ -296,9 +297,8 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
     }
     
     // Increase number table index
-    db->num_table++;
-    DB_TRACE(("DB:db_create_table:write number table: %d\n", db->num_table));
-    io_ret_val = db_write(db->fd, &db->num_table, DB_OFF_T_SIZE);
+    DB_TRACE(("DB:db_create_table:write number table: %d\n", num_table));
+    io_ret_val = db_write(db->fd, &num_table, DB_OFF_T_SIZE);
     if(io_ret_val != DB_OFF_T_SIZE)
     {
         DB_SET_ERROR(DB_WRITE_WRONG);
@@ -306,13 +306,13 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
     }
 
     /* Write position of table to database info */
-    pos = db_point_to_index_table_info_in_db(db->fd, db->num_table-1);
+    pos = db_point_to_index_table_info_in_db(db->fd, index_table);
     if(pos == -1)
     {
         return DB_NULL;
     }
 
-    DB_TRACE(("DB:db_create_table:write position of table in database info: %ld\n", pos_table));
+    DB_TRACE(("DB:db_create_table:write position of table in database info: pos = %ld, position of table = %ld\n", pos, pos_table));
     io_ret_val = db_write(db->fd, &pos_table, DB_OFF_T_SIZE);
     if(io_ret_val != DB_OFF_T_SIZE)
     {
@@ -320,5 +320,5 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
         return DB_NULL;
     }
 
-    return &(db->tables[num_table]);
+    return &(db->tables[index_table]);
 }
