@@ -24,6 +24,7 @@ OBJECT_FILE_DB=
 
 BUILD_DB()
 {
+	printf "\n\n=============================================================================\n"
 	NOW_PATH=${PWD}
 	cd ${DB_SOURCE_PATH};
 	make all
@@ -77,6 +78,16 @@ BUILD_T_DB_READ_DB()
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_read_db.o -o ${BIN_PATH}/t_db_read_db.out
 }
 
+BUILD_T_DB_CREATE_DB()
+{
+	printf "\n\n=============================================================================\n"
+	echo "${CC} -c ${TEST_PATH}/t_db_read_db.c -o ${OBJECT_PATH}/t_db_read_db.o"
+	${CC} -c ${TEST_PATH}/t_db_create_db.c -o ${OBJECT_PATH}/t_db_create_db.o
+	printf "\n\n=============================================================================\n"
+	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_read_db.o -o ${BIN_PATH}/t_db_read_db.out"
+	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_create_db.o -o ${BIN_PATH}/t_db_create_db.out
+}
+
 BUILD_TEST()
 {
 	printf "\nBUILD_DB"
@@ -87,8 +98,10 @@ BUILD_TEST()
 	BUILD_T_DB_CREATE_TABLE
 	printf "\nBUILD_T_DB_DEF"
 	BUILD_T_DB_DEF
-	printf "\nBUILD_T_DB_READ_DB"
-	BUILD_T_DB_READ_DB
+	printf "\nBUILD_T_DB_CREATE_TABLE"
+	BUILD_T_DB_CREATE_DB
+	# printf "\nBUILD_T_DB_READ_DB"
+	# BUILD_T_DB_READ_DB
 }
 #####################################################
 #SECTION 3: RULES
