@@ -130,7 +130,9 @@ struct db_table_data
     U32bit      id_table;
     U8bit       table_name[DB_MAX_LENGTH_TABLE_NAME];
     U8bit       num_field;
-    db_field    fields[DB_MAX_FIELDS_IN_TABLE];  
+    db_field    fields[DB_MAX_FIELDS_IN_TABLE];
+    struct db_rows_bucket_data          rows_bucket;  
+    struct db_fields_bucket_data        fields_bucket;
 };
 
 struct db_database_data
