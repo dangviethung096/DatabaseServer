@@ -56,7 +56,7 @@ static inline db_boolean_t db_read_table_info(DATABASE db)
         }
 
         io_ret_val = db_read(db->fd, &(db->tables[i].id_table), DB_INT_SIZE);
-        DB_TRACE(("DB:db_read_table_info: table id = %d\n", db->tables[i].id_table));
+        DB_TRACE(("DB:db_read_table_info: table id = %d at %ld\n", db->tables[i].id_table, pos));
         if(io_ret_val != DB_INT_SIZE)
         {
             DB_SET_ERROR(DB_READ_WRONG);
@@ -71,9 +71,11 @@ static inline db_boolean_t db_read_table_info(DATABASE db)
             DB_SET_ERROR(DB_SEEK_FD_FAIL);
             return DB_FAILURE;
         }
+        
         db->tables[i].table_name = (char *) db_alloc(DB_MAX_LENGTH_TABLE_NAME);
         io_ret_val = db_read(db->fd, db->tables[i].table_name, DB_MAX_LENGTH_TABLE_NAME);
-        DB_TRACE(("DB:db_read_table_info: table name = %s\n", db->tables[i].table_name));
+        DB_TRACE(("DB:db_read_table_info: table name = %s at %ld\n", db->tables[i].table_name, pos));
+        
         if (io_ret_val != DB_MAX_LENGTH_TABLE_NAME)
         {
             DB_SET_ERROR(DB_READ_WRONG);
@@ -81,43 +83,51 @@ static inline db_boolean_t db_read_table_info(DATABASE db)
         }
 
         /* Read number field */
-        // pos = db->tables[i].position_table + DB_POS_NUM_FIELD_IN_TABLE;
-
-        // if (db_seek(db->fd, pos, DB_BEGIN_FD) == -1)
-        // {
-        //     DB_SET_ERROR(DB_SEEK_FD_FAIL);
-        //     return DB_FAILURE;
-        // }
+        pos = db->tables[i].position_table + DB_POS_NUM_FIELD_IN_TABLE;
+        
+        if (db_seek(db->fd, pos, DB_BEGIN_FD) == -1)
+        {
+            DB_SET_ERROR(DB_SEEK_FD_FAIL);
+            return DB_FAILURE;
+        }
 
         io_ret_val = db_read(db->fd, &(db->tables[i].num_fields), DB_U_8_BIT_SIZE);
-        DB_TRACE(("DB:db_read_table_info: number fields = %s\n", db->tables[i].num_fields));
+        DB_TRACE(("DB:db_read_table_info: number fields = %d at %ld\n", db->tables[i].num_fields, pos));
         if (io_ret_val != DB_U_8_BIT_SIZE)
         {
             DB_SET_ERROR(DB_READ_WRONG);
             return DB_FAILURE;
         }
-
+        /* Alloc memory for fields */
+        db->tables[i].fields = (db_field *)db_alloc(DB_MAX_FIELDS_IN_TABLE * DB_FIELD_INFO_SIZE);
         /* Read fields */
         for(j = 0; j < db->tables[i].num_fields; j++)
         {
             // Alloc memory for field
-            db->tables[i].fields[j].field_name = (char *) db_alloc(DB_MAX_LENGTH_FIELD_NAME);
+            db_field field;
+
+            // Read flag
+            
             // Read field name
-            io_ret_val = db_read(db->fd, db->tables[i].fields[j].field_name, DB_MAX_LENGTH_FIELD_NAME);
-            DB_TRACE(("DB:db_read_table_info: field name = %s\n", db->tables[i].fields[j].field_name));
-            if (io_ret_val != DB_U_8_BIT_SIZE)
+            field.field_name = (char *)db_alloc(DB_MAX_LENGTH_FIELD_NAME);
+            io_ret_val = db_read(db->fd, field.field_name, DB_MAX_LENGTH_FIELD_NAME);
+            DB_TRACE(("DB:db_read_table_info: field name = %s at %ld\n", field.field_name, db_seek(db->fd, 0, DB_CURRENT_FD) - DB_MAX_LENGTH_TABLE_NAME ));
+            if (io_ret_val != DB_MAX_LENGTH_FIELD_NAME)
             {
                 DB_SET_ERROR(DB_READ_WRONG);
                 return DB_FAILURE;
             }
             // Read index of field
-            io_ret_val = db_read(db->fd, &(db->tables[i].fields[j].index), DB_INDEX_T_SIZE);
-            DB_TRACE(("DB:db_read_table_info: index in table = %d\n", db->tables[i].fields[j].index));
+            io_ret_val = db_read(db->fd, &(field.index), DB_INDEX_T_SIZE);
+            DB_TRACE(("DB:db_read_table_info: index in table = %d at %ld\n", field.index, db_seek(db->fd, 0, DB_CURRENT_FD) - DB_INDEX_T_SIZE));
             if (io_ret_val != DB_INDEX_T_SIZE)
             {
                 DB_SET_ERROR(DB_READ_WRONG);
                 return DB_FAILURE;
             }
+
+            // Assign field
+            db->tables[i].fields[field.index] = field; 
         }
 
     }

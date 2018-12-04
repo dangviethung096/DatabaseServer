@@ -45,9 +45,9 @@
 
 #define DB_ROWS_BUCKET_SIZE            sizeof(struct db_rows_bucket_data)
 #define DB_FIELDS_BUCKET_SIZE          sizeof(struct db_fields_bucket_data)
-#define DB_TABLE_DATA_SIZE             sizeof(struct db_table_data)
+#define DB_TABLE_INFO_DATA_SIZE             sizeof(struct db_table_info_data)
 
-#define DB_SINGLE_TABLE_SIZE           DB_ROWS_BUCKET_SIZE + DB_FIELDS_BUCKET_SIZE + DB_TABLE_DATA_SIZE
+#define DB_SINGLE_TABLE_SIZE           DB_ROWS_BUCKET_SIZE + DB_FIELDS_BUCKET_SIZE + DB_TABLE_INFO_DATA_SIZE
 /* END: define size */
             
 
@@ -102,7 +102,7 @@
 #define DB_POS_FIELDS_IN_TABLE           DB_POS_NUM_FIELD_IN_TABLE + DB_U_8_BIT_SIZE
 
 #define DB_POS_TABLE_INFO_IN_TABLE      0
-#define DB_POS_ROWS_BUCKET_IN_TABLE     DB_POS_TABLE_INFO_IN_TABLE + DB_TABLE_DATA_SIZE
+#define DB_POS_ROWS_BUCKET_IN_TABLE     DB_POS_TABLE_INFO_IN_TABLE + DB_TABLE_INFO_DATA_SIZE
 #define DB_POS_FIELDS_BUCKET_IN_TABLE   DB_POS_ROWS_BUCKET_IN_TABLE + DB_ROWS_BUCKET_SIZE
 
 

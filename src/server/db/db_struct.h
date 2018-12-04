@@ -125,6 +125,13 @@ struct db_rows_bucket_data
     struct db_row_data rows[DB_MAX_ROWS_IN_BUCKET];
 };
 
+struct db_table_info_data
+{
+    U32bit id_table;
+    U8bit table_name[DB_MAX_LENGTH_TABLE_NAME];
+    U8bit num_field;
+    db_field fields[DB_MAX_FIELDS_IN_TABLE];
+};
 struct db_table_data
 {
     U32bit      id_table;
