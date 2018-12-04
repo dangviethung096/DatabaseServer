@@ -150,9 +150,28 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
         DB_SET_ERROR(DB_OUT_OF_BOUNDS);
         return DB_NULL;
     }
+
     DB_TRACE(("DB:db_create_table:table_name = %s\n", table_name));
     io_ret_val = db_write(db->fd, table_name, db_strlen(table_name));
     if(io_ret_val == -1)
+    {
+        DB_SET_ERROR(DB_WRITE_WRONG);
+        return DB_NULL;
+    }
+
+    
+    // Write number fields
+    off_t pos_num_field = pos_table + DB_POS_NUM_FIELD_IN_TABLE;
+    if (db_seek(db->fd, pos_num_field, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return DB_NULL;
+    }
+
+    db->tables[index_table].num_fields = (U8bit) num_field;
+    DB_TRACE(("DB:db_create_table:num_fields = %d\n", (int) db->tables[index_table].num_fields));
+    io_ret_val = db_write(db->fd, &(db->tables[index_table].num_fields), DB_U_8_BIT_SIZE);
+    if(io_ret_val != DB_U_8_BIT_SIZE)
     {
         DB_SET_ERROR(DB_WRITE_WRONG);
         return DB_NULL;

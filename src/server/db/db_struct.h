@@ -39,6 +39,7 @@ typedef struct {
     U32bit id_table;
     char * table_name;
     db_field fields;
+    U8bit  num_fields;
     U32bit num_rows;
     off_t position_table;
 } db_table_info;
@@ -79,7 +80,9 @@ enum db_error_no {
 struct db_value
 {
     // struct store data
-    char row_id : 8;
+    char flag;
+    char row_id;
+    char reserve[2];                 //Use 3 byte re
     char value[28];                 //Using 28 byte
 };
 
@@ -124,17 +127,18 @@ struct db_rows_bucket_data
 
 struct db_table_data
 {
-    U32bit id_table;
-    U8bit table_name[DB_MAX_LENGTH_TABLE_NAME];
-    db_field fields[DB_MAX_FIELDS_IN_TABLE];  
+    U32bit      id_table;
+    U8bit       table_name[DB_MAX_LENGTH_TABLE_NAME];
+    U8bit       num_field;
+    db_field    fields[DB_MAX_FIELDS_IN_TABLE];  
 };
 
 struct db_database_data
 {
-    U8bit database_name[DB_MAX_LENGTH_DB_NAME];
-    U32bit num_table;
-    off_t tables[DB_MAX_TABLE_IN_DATABASE];
-    off_t last_position;
+    U8bit   database_name[DB_MAX_LENGTH_DB_NAME];
+    U32bit  num_table;
+    off_t   tables[DB_MAX_TABLE_IN_DATABASE];
+    off_t   last_position;
 };
 
 

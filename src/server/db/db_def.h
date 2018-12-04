@@ -15,7 +15,7 @@
 #define DB_FLAG_T_SIZE                  sizeof(db_flag_t)
 #define DB_INDEX_T_SIZE                 sizeof(db_index_t)
 #define DB_TABLE_INFO_TYPE_SIZE         sizeof(db_table_info)
-
+#define DB_U_8_BIT_SIZE                 sizeof(U8bit)
 #define DB_TABLE_INFO_SIZE              sizeof(db_table_info)
 #define DB_INT_SIZE                     sizeof(int)
 
@@ -92,9 +92,10 @@
 
 
 /* START: define position in table data */
-#define DB_POS_ID_TABLE         0
-#define DB_POS_NAME_TABLE       DB_POS_ID_TABLE + DB_INT_SIZE
-#define DB_POS_FIELDS_IN_TABLE  DB_POS_NAME_TABLE   +   DB_MAX_LENGTH_TABLE_NAME
+#define DB_POS_ID_TABLE                  0
+#define DB_POS_NAME_TABLE                DB_POS_ID_TABLE + DB_INT_SIZE
+#define DB_POS_NUM_FIELD_IN_TABLE        DB_POS_NAME_TABLE   +   DB_MAX_LENGTH_TABLE_NAME
+#define DB_POS_FIELDS_IN_TABLE           DB_POS_NUM_FIELD_IN_TABLE + DB_U_8_BIT_SIZE
 
 #define DB_POS_TABLE_INFO_IN_TABLE      0
 #define DB_POS_ROWS_BUCKET_IN_TABLE     DB_POS_TABLE_INFO_IN_TABLE + DB_TABLE_DATA_SIZE

@@ -17,6 +17,19 @@ int main()
         return 0;
     }
 
+    printf("Database name: %s\n", db->database_name);
+    printf("FD: %d\n", db->fd);
+    printf("Last position: %ld\n", db->last_position);
+    printf("================== List tables =================\n");
+    int i,j;
+    for(i = 0; i < db->num_table; i++)
+    {
+        printf("Table %d: %ld\n", i, db->tables[i].position_table);
+        for(j = 0; j < db->tables[i].num_fields; j++)
+        {
+            
+        }
+    }
     /* Show num_table */
     db_close(db);
     return 1;
