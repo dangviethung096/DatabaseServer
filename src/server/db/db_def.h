@@ -18,6 +18,7 @@
 #define DB_U_8_BIT_SIZE                 sizeof(U8bit)
 #define DB_TABLE_INFO_SIZE              sizeof(db_table_info)
 #define DB_INT_SIZE                     sizeof(int)
+#define DB_FIELD_INFO_SIZE              sizeof(db_field)         
 
 #define DB_FIELD_IN_TABLE_SIZE          sizeof(struct db_field_in_table_data)
 /* End: size of struct or type in db */
@@ -106,7 +107,7 @@
 
 #define DB_POS_FLAG_IN_FIELD_INFO       0
 #define DB_POS_NAME_IN_FIELD_INFO       DB_FLAG_T_SIZE
-#define DB_POS_INDEX_IN_FIELD_INFO      DB_POS_NAME_IN_FIELD_INFO + DB_MAX_FIELDS_IN_TABLE * DB_OFF_T_SIZE
+#define DB_POS_INDEX_IN_FIELD_INFO      DB_POS_NAME_IN_FIELD_INFO + DB_MAX_LENGTH_FIELD_NAME
 
 #define DB_POS_FLAG_IN_FIELDS_BUCKET     0
 
