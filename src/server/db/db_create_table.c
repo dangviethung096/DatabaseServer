@@ -106,6 +106,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
             // Check is any table_pos equal last_pos
             if(new_last_pos == pos_table_i)
             {
+                DB_TRACE(("DB:db_create_table:new_last_pos = table_pos_%d = %ld\n", i, new_last_pos));
                 flag_last_position = 1;
                 new_last_pos += DB_SINGLE_TABLE_SIZE;
                 break;
@@ -113,9 +114,8 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
         }
     }while(flag_last_position);
 
-    new_last_pos = db_seek(db->fd, pos_table + DB_SINGLE_TABLE_SIZE, DB_BEGIN_FD);
     DB_TRACE(("DB:db_create_table:new_last_pos = %ld\n", new_last_pos));
-    if(new_last_pos == -1)
+    if (db_seek(db->fd, new_last_pos, DB_BEGIN_FD) == -1)
     {
         DB_SET_ERROR(DB_SEEK_FD_FAIL);
         return DB_NULL;

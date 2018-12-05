@@ -404,7 +404,7 @@ db_boolean_t db_set_position_index_table(int fd, int index, off_t pos)
 
     DB_TRACE(("DB:db_set_position_index_table: write at %ld\n", db_seek(fd, 0, DB_CURRENT_FD)));
     ssize_t io_ret_val = db_write(fd, &pos, DB_OFF_T_SIZE);
-    DB_TRACE(("DB:db_set_position_index_table: write pos %ld to position table info at %ld\n", pos));
+    DB_TRACE(("DB:db_set_position_index_table: write pos %ld to position table info\n", pos));
     if(io_ret_val != DB_OFF_T_SIZE)
     {
         DB_SET_ERROR(DB_WRITE_WRONG);
