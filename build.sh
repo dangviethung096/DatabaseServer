@@ -68,16 +68,6 @@ BUILD_T_DB_DEF()
 }
 
 
-BUILD_T_DB_READ_DB()
-{
-	printf "\n\n=============================================================================\n"
-	echo "${CC} -c ${TEST_PATH}/t_db_read_db.c -o ${OBJECT_PATH}/t_db_read_db.o"
-	${CC} -c ${TEST_PATH}/t_db_read_db.c -o ${OBJECT_PATH}/t_db_read_db.o
-	printf "\n\n=============================================================================\n"
-	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_read_db.o -o ${BIN_PATH}/t_db_read_db.out"
-	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_read_db.o -o ${BIN_PATH}/t_db_read_db.out
-}
-
 BUILD_T_DB_CREATE_DB()
 {
 	printf "\n\n=============================================================================\n"
@@ -112,8 +102,6 @@ BUILD_TEST()
 	#BUILD_T_DB_CREATE_DB
 	printf "\nBUILD_T_DB_REMOVE_TABLE"
 	BUILD_T_DB_REMOVE_TABLE
-	# printf "\nBUILD_T_DB_READ_DB"
-	# BUILD_T_DB_READ_DB
 }
 #####################################################
 #SECTION 3: RULES
