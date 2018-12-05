@@ -1,5 +1,5 @@
 /* 
-    File: db_def.h
+    File: db_open.c
     Author: Dang Viet Hung
     Description: 
 

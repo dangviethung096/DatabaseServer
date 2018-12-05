@@ -53,7 +53,7 @@ struct db_file_info {
     unsigned int num_table;
     // Schema in tables
     db_table_info * tables;
-    // End data
+    // This field will show position that can add new single table
     off_t last_position;
 };
 

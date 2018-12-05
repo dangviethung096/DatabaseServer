@@ -94,6 +94,24 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
 
 
     // Seek to new last position
+    // Find new last position
+    new_last_pos = DB_POS_LAST_POSITION + DB_OFF_T_SIZE;
+    int flag_last_position;
+    do{
+        flag_last_position = 0;
+        off_t pos_table_i;
+        for (i = 0; i < db->num_table; i++)
+        {
+            pos_table_i = db_get_position_index_table(db->fd, i);
+            // Check is any table_pos equal last_pos
+            if(new_last_pos == pos_table_i)
+            {
+                flag_last_position = 1;
+                new_last_pos += DB_SINGLE_TABLE_SIZE;
+                break;
+            }
+        }
+    }while(flag_last_position);
 
     new_last_pos = db_seek(db->fd, pos_table + DB_SINGLE_TABLE_SIZE, DB_BEGIN_FD);
     DB_TRACE(("DB:db_create_table:new_last_pos = %ld\n", new_last_pos));
@@ -274,20 +292,16 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
     }
     
     
-    db->last_position = new_last_pos;
     DB_TRACE(("DB:db_create_table:write last position: %ld at %ld\n", new_last_pos, db_seek(db->fd, 0, DB_CURRENT_FD) ));
-    io_ret_val = db_write(db->fd, &db->last_position, DB_OFF_T_SIZE);
+    io_ret_val = db_write(db->fd, &new_last_pos, DB_OFF_T_SIZE);
     if(io_ret_val != DB_OFF_T_SIZE)
     {
         DB_SET_ERROR(DB_WRITE_WRONG);
         return DB_NULL;
     }
 
-    /* Increase num_table */
-    db->num_table = num_table;
-
-    /* Write number table info to database info */
     
+    /* Write number table info to database info */
     pos = DB_POS_NUMBER_TABLE;
     if(db_seek(db->fd, pos, DB_BEGIN_FD) == -1)
     {
@@ -305,19 +319,15 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
     }
 
     /* Write position of table to database info */
-    pos = db_point_to_index_table_info_in_db(db->fd, index_table);
-    if(pos == -1)
-    {
-        return DB_NULL;
-    }
-
-    DB_TRACE(("DB:db_create_table:write position of table in database info: pos = %ld, position of table = %ld\n", pos, pos_table));
-    io_ret_val = db_write(db->fd, &pos_table, DB_OFF_T_SIZE);
-    if(io_ret_val != DB_OFF_T_SIZE)
+    if(db_set_position_index_table(db->fd, index_table, pos_table) == DB_FAILURE)
     {
         DB_SET_ERROR(DB_WRITE_WRONG);
         return DB_NULL;
     }
+
+    /* Increase num_table */
+    db->num_table = num_table;
+    db->last_position = new_last_pos;
 
     return &(db->tables[index_table]);
 }

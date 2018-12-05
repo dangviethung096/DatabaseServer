@@ -26,6 +26,15 @@ db_boolean_t db_get_flag_in_fields_bucket(int fd, off_t pos_fields_bucket, db_in
 db_boolean_t db_set_flag_in_fields_bucket(int fd, off_t pos_fields_bucket, db_index_t index, db_flag_t flag);
 
 off_t db_point_to_index_table_info_in_db(int fd, int index);
+off_t db_get_position_index_table(int fd, int index);
+db_boolean_t db_set_position_index_table(int fd, int index, off_t pos);
+
+/* START: function with string */
+#define db_strncmp(str1, str2, num)                         \
+            strncmp(str1, str2,(size_t) num)
+
+/* END: function with string */
+
 /* Start: Functions with file descriptor */
 #define db_seek(fd, off_set, whence)        \
             lseek(fd, off_set, whence)

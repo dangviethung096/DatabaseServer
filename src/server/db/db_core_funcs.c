@@ -334,7 +334,6 @@ db_boolean_t db_is_row_in_rows_bucket_used(int fd, off_t pos_rows_bucket, db_ind
 /* 
     Function: db_point_to_index_table_info_in_db
     Params: fd,
-            pos_rows_bucket,
             index
     Description: point fd to index of table info in database
                  database have a array of poisition of table
@@ -345,8 +344,8 @@ db_boolean_t db_is_row_in_rows_bucket_used(int fd, off_t pos_rows_bucket, db_ind
  */
 off_t db_point_to_index_table_info_in_db(int fd, int index)
 {
-
     off_t pos = DB_POS_FIRST_TABLE_POS + index * DB_OFF_T_SIZE;
+    DB_TRACE(("DB:db_point_to_index_table_info_in_db: seek to %ld\n", pos));
     if(db_seek(fd, pos, DB_BEGIN_FD) == -1)
     {
         DB_TRACE(("DB:db_point_to_index_fields_bucket: seek_fail!\n"));
@@ -355,4 +354,62 @@ off_t db_point_to_index_table_info_in_db(int fd, int index)
     }
 
     return pos;
+}
+
+/* 
+    Function: db_get_position_index_table
+    Params: fd,
+            index
+    Description: get position of index table
+    Return value: -1 if error
+                  current position of fd if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+off_t db_get_position_index_table(int fd, int index)
+{
+    if(db_point_to_index_table_info_in_db(fd, index) == -1)
+    {
+        return -1;
+    }
+    off_t pos_table = 0;
+    DB_TRACE(("DB:db_get_position_index_table: read at %ld\n", db_seek(fd, 0, DB_CURRENT_FD) ));
+    ssize_t io_ret_val = db_read(fd, &pos_table, DB_OFF_T_SIZE);
+    DB_TRACE(("DB:db_get_position_index_table: read pos %ld in position table info\n", pos_table));
+    if(io_ret_val != DB_OFF_T_SIZE)
+    {
+        DB_SET_ERROR(DB_READ_WRONG);
+        return -1;
+    }
+
+    return pos_table;
+}
+
+/* 
+    Function: db_set_position_index_table
+    Params: fd,
+            index
+    Description: set position of index table
+    Return value: DB_FAILURE if error
+                  DB_SUCCESS if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+db_boolean_t db_set_position_index_table(int fd, int index, off_t pos)
+{
+    if(db_point_to_index_table_info_in_db(fd, index) == -1)
+    {
+        return DB_FAILURE;
+    }
+
+    DB_TRACE(("DB:db_set_position_index_table: write at %ld\n", db_seek(fd, 0, DB_CURRENT_FD)));
+    ssize_t io_ret_val = db_write(fd, &pos, DB_OFF_T_SIZE);
+    DB_TRACE(("DB:db_set_position_index_table: write pos %ld to position table info at %ld\n", pos));
+    if(io_ret_val != DB_OFF_T_SIZE)
+    {
+        DB_SET_ERROR(DB_WRITE_WRONG);
+        return DB_FAILURE;
+    }
+
+    return DB_SUCCESS;
 }
