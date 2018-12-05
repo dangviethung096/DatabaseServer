@@ -81,10 +81,10 @@ BUILD_T_DB_CREATE_DB()
 BUILD_T_DB_REMOVE_TABLE()
 {
 	printf "\n\n=============================================================================\n"
-	echo "${CC} -c ${TEST_PATH}/t_db_read_db.c -o ${OBJECT_PATH}/t_db_read_db.o"
+	echo "${CC} -c ${TEST_PATH}/t_db_remove_table.c -o ${OBJECT_PATH}/t_db_remove_table.o"
 	${CC} -c ${TEST_PATH}/t_db_remove_table.c -o ${OBJECT_PATH}/t_db_remove_table.o
 	printf "\n\n=============================================================================\n"
-	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_read_db.o -o ${BIN_PATH}/t_db_read_db.out"
+	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_remove_table.o -o ${BIN_PATH}/t_db_remove_table.out"
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_remove_table.o -o ${BIN_PATH}/t_db_remove_table.out
 }
 
@@ -141,6 +141,6 @@ BUILD_TEST()
 
 #########################################################################
 #clean object file
-#${RM} -rf ${OBJECT_PATH}/*.o
-#${RM} -rf ${BIN_PATH}/*
+${RM} -rf ${OBJECT_PATH}/*.o
+${RM} -rf ${BIN_PATH}/*
 BUILD_TEST
