@@ -19,7 +19,7 @@ const char * db_error_str[] = {
     "DB_SEEK_FD_FAIL",          //3
     "DB_NULL_VALUE",            //4
     "DB_NOT_EXIST",             //5
-    "DB_EXISTED",                         //6
+    "DB_EXISTED",               //6
     "",                         //7
     "",                         //8
     "",                         //9
