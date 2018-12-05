@@ -1,5 +1,5 @@
 /* 
-    File: db_core_funcs.h
+    File: db_core_funcs.c
     Author: Dang Viet Hung
     Description: 
 

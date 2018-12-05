@@ -1,5 +1,5 @@
 /* 
-    File: db_global.h
+    File: db_global.c
     Author: Dang Viet Hung
     Description: 
 

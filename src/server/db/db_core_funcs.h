@@ -1,3 +1,10 @@
+/* 
+    File: db_core_funcs.h
+    Author: Dang Viet Hung
+    Description: 
+
+    
+ */
 
 #ifndef DB_CORE_FUNCS_H
 

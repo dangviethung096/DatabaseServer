@@ -1,5 +1,5 @@
 /* 
-    File: db_open.c
+    File: db_remove_table.c
     Author: Dang Viet Hung
     Description: 
 
