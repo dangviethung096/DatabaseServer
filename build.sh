@@ -88,6 +88,16 @@ BUILD_T_DB_CREATE_DB()
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_create_db.o -o ${BIN_PATH}/t_db_create_db.out
 }
 
+BUILD_T_DB_REMOVE_TABLE()
+{
+	printf "\n\n=============================================================================\n"
+	echo "${CC} -c ${TEST_PATH}/t_db_read_db.c -o ${OBJECT_PATH}/t_db_read_db.o"
+	${CC} -c ${TEST_PATH}/t_db_remove_table.c -o ${OBJECT_PATH}/t_db_remove_table.o
+	printf "\n\n=============================================================================\n"
+	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_read_db.o -o ${BIN_PATH}/t_db_read_db.out"
+	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_remove_table.o -o ${BIN_PATH}/t_db_remove_table.out
+}
+
 BUILD_TEST()
 {
 	printf "\nBUILD_DB"
@@ -95,11 +105,13 @@ BUILD_TEST()
 	printf "\nBUILD_T_DB_OPEN"
 	#BUILD_T_DB_OPEN
 	printf "\nBUILD_T_DB_CREATE_TABLE"
-	BUILD_T_DB_CREATE_TABLE
+	#BUILD_T_DB_CREATE_TABLE
 	printf "\nBUILD_T_DB_DEF"
-	BUILD_T_DB_DEF
+	#BUILD_T_DB_DEF
 	printf "\nBUILD_T_DB_CREATE_TABLE"
-	BUILD_T_DB_CREATE_DB
+	#BUILD_T_DB_CREATE_DB
+	printf "\nBUILD_T_DB_REMOVE_TABLE"
+	BUILD_T_DB_REMOVE_TABLE
 	# printf "\nBUILD_T_DB_READ_DB"
 	# BUILD_T_DB_READ_DB
 }
@@ -141,6 +153,6 @@ BUILD_TEST()
 
 #########################################################################
 #clean object file
-${RM} -rf ${OBJECT_PATH}/*.o
-${RM} -rf ${BIN_PATH}/*
+#${RM} -rf ${OBJECT_PATH}/*.o
+#${RM} -rf ${BIN_PATH}/*
 BUILD_TEST
