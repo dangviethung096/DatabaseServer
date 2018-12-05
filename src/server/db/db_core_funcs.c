@@ -413,3 +413,63 @@ db_boolean_t db_set_position_index_table(int fd, int index, off_t pos)
 
     return DB_SUCCESS;
 }
+/* 
+    Function: db_get_last_position
+    Params: fd
+    Description: get last position
+    Return value: -1 if error
+                  last position if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+off_t db_get_last_position(int fd)
+{   
+    off_t pos = DB_POS_LAST_POSITION;
+    if (db_seek(fd, pos, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return -1;
+    }
+
+    off_t last_position;
+    ssize_t io_ret_val;
+    DB_TRACE(("DB:db_create_table:read last position: %ld at %ld\n", last_position, pos));
+    io_ret_val = db_read(fd, &last_position, DB_OFF_T_SIZE);
+    if (io_ret_val != DB_OFF_T_SIZE)
+    {
+        DB_SET_ERROR(DB_WRITE_WRONG);
+        return -1;
+    }
+
+    return last_position;
+}
+
+/* 
+    Function: db_set_last_position
+    Params: fd
+    Description: set last position
+    Return value: DB_FAILURE if error
+                  DB_SUCCESS if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+db_boolean_t db_set_last_position(int fd, off_t last_position)
+{
+    off_t pos = DB_POS_LAST_POSITION;
+    if (db_seek(fd, pos, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return DB_FAILURE;
+    }
+
+    ssize_t io_ret_val;
+    DB_TRACE(("DB:db_create_table:write last position: %ld at %ld\n", last_position, pos));
+    io_ret_val = db_write(fd , &last_position, DB_OFF_T_SIZE);
+    if (io_ret_val != DB_OFF_T_SIZE)
+    {
+        DB_SET_ERROR(DB_WRITE_WRONG);
+        return DB_FAILURE;
+    }
+
+    return DB_SUCCESS;
+}

@@ -36,6 +36,9 @@ off_t db_point_to_index_table_info_in_db(int fd, int index);
 off_t db_get_position_index_table(int fd, int index);
 db_boolean_t db_set_position_index_table(int fd, int index, off_t pos);
 
+off_t db_get_last_position(int fd);
+db_boolean_t db_set_last_position(int fd, off_t last_position);
+
 /* START: function with string */
 #define db_strncmp(str1, str2, num)                         \
             strncmp(str1, str2,(size_t) num)

@@ -297,24 +297,11 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
 
     /* Write new last position in db */
     
-    off_t pos = DB_POS_LAST_POSITION;
-    if(db_seek(db->fd, pos, DB_BEGIN_FD) == -1)
-    {
-        DB_SET_ERROR(DB_SEEK_FD_FAIL);
-        return DB_NULL;
-    }
     
-    
-    DB_TRACE(("DB:db_create_table:write last position: %ld at %ld\n", new_last_pos, db_seek(db->fd, 0, DB_CURRENT_FD) ));
-    io_ret_val = db_write(db->fd, &new_last_pos, DB_OFF_T_SIZE);
-    if(io_ret_val != DB_OFF_T_SIZE)
-    {
-        DB_SET_ERROR(DB_WRITE_WRONG);
-        return DB_NULL;
-    }
 
     
     /* Write number table info to database info */
+    off_t pos;
     pos = DB_POS_NUMBER_TABLE;
     if(db_seek(db->fd, pos, DB_BEGIN_FD) == -1)
     {
@@ -337,6 +324,14 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
         DB_SET_ERROR(DB_WRITE_WRONG);
         return DB_NULL;
     }
+
+    /* Set last position */
+    if(db_set_last_position(db->fd, new_last_pos) == DB_FAILURE)
+    {
+        return DB_NULL;
+    }
+
+    
 
     /* Increase num_table */
     db->num_table = num_table;
