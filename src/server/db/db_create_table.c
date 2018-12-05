@@ -11,6 +11,7 @@
 #include "db_error.h"
 #include "db_hash_function.h"
 #include "db_global.h"
+#include "db_alloc.h"
 #include <fcntl.h>
 #include <sys/stat.h>
 
@@ -210,6 +211,8 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
     }
 
     // Write fields in table
+    
+
     off_t pos_first_field_in_table = pos_table + DB_POS_FIELDS_IN_TABLE;
     DB_TRACE(("DB:db_create_table:pos_first_field_in_table = %ld\n", pos_first_field_in_table));
     // Write each field in table to database
@@ -294,8 +297,6 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
             return DB_NULL;
         }
     }
-
-    /* Write new last position in db */
     
     
 
@@ -311,8 +312,8 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
     
     // Increase number table index
     DB_TRACE(("DB:db_create_table:write number table: %d\n", num_table));
-    io_ret_val = db_write(db->fd, &num_table, DB_OFF_T_SIZE);
-    if(io_ret_val != DB_OFF_T_SIZE)
+    io_ret_val = db_write(db->fd, &num_table, DB_INT_SIZE);
+    if(io_ret_val != DB_INT_SIZE)
     {
         DB_SET_ERROR(DB_WRITE_WRONG);
         return DB_NULL;
@@ -331,12 +332,25 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
         return DB_NULL;
     }
 
-    
+
 
     /* Increase num_table */
     db->num_table = num_table;
     db->last_position = new_last_pos;
     db->tables[index_table].id_table = now_id_table;
+    db->tables[index_table].num_fields = num_field;
+    db->tables[index_table].fields = (db_field *) db_alloc(DB_MAX_FIELDS_IN_TABLE * DB_FIELD_INFO_SIZE);
+    /* Init all field */
+    for(i = 0; i < DB_MAX_FIELDS_IN_TABLE; i++)
+    {
+        db->tables[index_table].fields[i].index = -1;
+    }
+
+    for(i = 0; i < num_field; i++)
+    {
+        db->tables[index_table].fields[fields[i].index].field_name = (char *) db_alloc(DB_MAX_LENGTH_FIELD_NAME);
+        db->tables[index_table].fields[fields[i].index].index = fields[i].index;
+    }
 
     return &(db->tables[index_table]);
 }
