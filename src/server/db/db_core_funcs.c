@@ -473,3 +473,79 @@ db_boolean_t db_set_last_position(int fd, off_t last_position)
 
     return DB_SUCCESS;
 }
+/* 
+    Function: point_to_num_table
+    Params: fd
+    Description: point to position of number table
+    Return value: -1 if error
+                  position of number table if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+static inline off_t point_to_num_table(int fd)
+{
+    off_t pos = DB_POS_NUMBER_TABLE;
+    if (db_seek(fd, pos, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return -1;
+    }
+    return pos;
+}
+/* 
+    Function: db_get_num_table
+    Params: fd
+    Description: get number table
+    Return value: -1 if error
+                  number table if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+unsigned int db_get_num_table(int fd)
+{
+    off_t pos = point_to_num_table(fd);
+    if (pos == -1)
+    {
+        return -1;
+    }
+    ssize_t io_ret_val;
+    unsigned int num_table;
+    io_ret_val = db_read(fd, &num_table, DB_INT_SIZE);
+    DB_TRACE(("DB:db_get_num_table:get number table = %d at %ld\n", num_table, pos));
+    if (io_ret_val != DB_INT_SIZE)
+    {
+        DB_SET_ERROR(DB_READ_WRONG);
+        return -1;
+    }
+
+    return num_table;
+}
+
+/* 
+    Function: db_set_num_table
+    Params: fd
+    Description: set number table in database
+    Return value: DB_FAILURE if error
+                  DB_SUCCESS if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+db_boolean_t db_set_num_table(int fd, unsigned int num_table)
+{
+    off_t pos = point_to_num_table(fd);
+    if (pos == -1)
+    {
+        return DB_FAILURE;
+    }
+    ssize_t io_ret_val;
+    DB_TRACE(("DB:db_set_num_table:write number table = %d at %ld\n", num_table, pos));
+    io_ret_val = db_write(fd, &num_table, DB_INT_SIZE);
+    
+    if (io_ret_val != DB_INT_SIZE)
+    {
+        DB_SET_ERROR(DB_WRITE_WRONG);
+        return DB_FAILURE;
+    }
+
+    return DB_SUCCESS;
+}

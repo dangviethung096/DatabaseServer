@@ -20,16 +20,21 @@
  */
 db_boolean_t db_remove_table(DATABASE db, char * table_name)
 {
+
     int old_num_table = db->num_table;
     db_flag_t flag = DB_FLAG_NOT_USED;
     int new_last_position;
-    ssize_t io_ret_val;
+    ssize_t io_ret_val = io_ret_val;
+    DB_RESET_ERROR();
+
     int i;
     for(i = 0; i < old_num_table; i++)
     {
-        if(db_strncmp(db->tables[i].table_name, table_name, db_strlen(table_name)) == 0)
+        DB_TRACE(("DB:db_remove_table: consider %s\n", db->tables[i].table_name));
+        if(db_strncmp(db->tables[i].table_name, table_name, db_strlen(table_name) - 1) == 0)
         {
             // Remove table
+            DB_TRACE(("DB:db_remove_table: id_table %d\n", db->tables[i].id_table));
             new_last_position = db->tables[i].position_table;
             flag = DB_FLAG_USED;
             break;
@@ -57,7 +62,20 @@ db_boolean_t db_remove_table(DATABASE db, char * table_name)
         }
     }
     
+    if(db_set_last_position(db->fd, new_last_position) == DB_FAILURE)
+    {
+        return DB_FAILURE;
+    }
+
+    if(db_set_num_table(db->fd, old_num_table - 1) == DB_FAILURE)
+    {
+        return DB_FAILURE;
+    }
+
+    
     db->num_table--;
     db->last_position = new_last_position;
+    
+
     return DB_SUCCESS;
 }
