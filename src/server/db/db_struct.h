@@ -31,6 +31,7 @@ typedef db_key_t db_value_t;
 
 typedef struct {
     char * field_name;
+    // If field is not using, index = -1
     int index;
 } db_field;
 
