@@ -26,11 +26,11 @@ db_boolean_t db_remove_table(DATABASE db, char * table_name)
     int new_last_position;
     ssize_t io_ret_val = io_ret_val;
     DB_RESET_ERROR();
+    DB_TRACE(("DB:db_remove_table: table name is deleted = %s\n", table_name));
 
     int i;
     for(i = 0; i < old_num_table; i++)
     {
-        DB_TRACE(("DB:db_remove_table: consider %s\n", db->tables[i].table_name));
         if(db_strncmp(db->tables[i].table_name, table_name, db_strlen(table_name) - 1) == 0)
         {
             // Remove table
@@ -46,6 +46,8 @@ db_boolean_t db_remove_table(DATABASE db, char * table_name)
         DB_SET_ERROR(DB_NOT_EXIST);
         return DB_FAILURE;
     }
+
+    DB_TRACE(("DB:db_remove_table: push table position info to first in array!\n"));
 
     for(; i < (old_num_table - 1); i++)
     {

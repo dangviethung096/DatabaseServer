@@ -388,7 +388,8 @@ off_t db_get_position_index_table(int fd, int index)
 /* 
     Function: db_set_position_index_table
     Params: fd,
-            index
+            index,
+            pos
     Description: set position of index table
     Return value: DB_FAILURE if error
                   DB_SUCCESS if success
@@ -413,6 +414,27 @@ db_boolean_t db_set_position_index_table(int fd, int index, off_t pos)
 
     return DB_SUCCESS;
 }
+
+/* 
+    Function: point_to_last_position
+    Params: fd
+    Description: point to last position
+    Return value: -1 if error
+                  position of number table if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+static inline off_t point_to_last_position(int fd)
+{
+    off_t pos = DB_POS_LAST_POSITION;
+    if (db_seek(fd, pos, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return -1;
+    }
+    return pos;
+}
+
 /* 
     Function: db_get_last_position
     Params: fd
@@ -424,29 +446,30 @@ db_boolean_t db_set_position_index_table(int fd, int index, off_t pos)
  */
 off_t db_get_last_position(int fd)
 {   
-    off_t pos = DB_POS_LAST_POSITION;
-    if (db_seek(fd, pos, DB_BEGIN_FD) == -1)
+    off_t pos = point_to_last_position(fd);
+    if(pos == -1)
     {
-        DB_SET_ERROR(DB_SEEK_FD_FAIL);
         return -1;
     }
 
     off_t last_position;
     ssize_t io_ret_val;
-    DB_TRACE(("DB:db_create_table:read last position: %ld at %ld\n", last_position, pos));
     io_ret_val = db_read(fd, &last_position, DB_OFF_T_SIZE);
+    DB_TRACE(("DB:db_create_table:read last position: %ld at %ld\n", last_position, pos));
     if (io_ret_val != DB_OFF_T_SIZE)
     {
-        DB_SET_ERROR(DB_WRITE_WRONG);
+        DB_SET_ERROR(DB_READ_WRONG);
         return -1;
     }
 
     return last_position;
 }
 
+
 /* 
     Function: db_set_last_position
-    Params: fd
+    Params: fd,
+            last_position
     Description: set last position
     Return value: DB_FAILURE if error
                   DB_SUCCESS if success
@@ -455,13 +478,12 @@ off_t db_get_last_position(int fd)
  */
 db_boolean_t db_set_last_position(int fd, off_t last_position)
 {
-    off_t pos = DB_POS_LAST_POSITION;
-    if (db_seek(fd, pos, DB_BEGIN_FD) == -1)
+    off_t pos = point_to_last_position(fd);
+    if(pos == -1)
     {
-        DB_SET_ERROR(DB_SEEK_FD_FAIL);
         return DB_FAILURE;
     }
-
+        
     ssize_t io_ret_val;
     DB_TRACE(("DB:db_create_table:write last position: %ld at %ld\n", last_position, pos));
     io_ret_val = db_write(fd , &last_position, DB_OFF_T_SIZE);
@@ -523,7 +545,8 @@ unsigned int db_get_num_table(int fd)
 
 /* 
     Function: db_set_num_table
-    Params: fd
+    Params: fd,
+            num_table
     Description: set number table in database
     Return value: DB_FAILURE if error
                   DB_SUCCESS if success
@@ -542,6 +565,87 @@ db_boolean_t db_set_num_table(int fd, unsigned int num_table)
     io_ret_val = db_write(fd, &num_table, DB_INT_SIZE);
     
     if (io_ret_val != DB_INT_SIZE)
+    {
+        DB_SET_ERROR(DB_WRITE_WRONG);
+        return DB_FAILURE;
+    }
+
+    return DB_SUCCESS;
+}
+
+/* 
+    Function: point_to_database_name
+    Params: fd
+    Description: point to name of database
+    Return value: -1 if error
+                  position of number table if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+static inline off_t point_to_database_name(int fd)
+{
+    off_t pos = DB_POS_NAME_DATABASE;
+    
+    if (db_seek(fd, pos, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return -1;
+    }
+    DB_TRACE(("DB:point_to_database_name:point to database_name at %ld\n", pos));
+    return pos;
+}
+
+/* 
+    Function: db_set_database_name
+    Params: fd,
+            database_name
+    Description: set number database name
+    Return value: DB_FAILURE if error
+                  DB_SUCCESS if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+db_boolean_t db_set_database_name(int fd, char * database_name)
+{
+    off_t pos = point_to_database_name(fd);
+    if (pos == -1)
+    {
+        return DB_FAILURE;
+    }
+    ssize_t io_ret_val;
+    DB_TRACE(("DB:db_set_database_name:write database name = %s\n", database_name));
+    io_ret_val = db_write(fd, database_name, DB_MAX_LENGTH_DB_NAME);
+
+    if (io_ret_val != DB_MAX_LENGTH_DB_NAME)
+    {
+        DB_SET_ERROR(DB_WRITE_WRONG);
+        return DB_FAILURE;
+    }
+
+    return DB_SUCCESS;
+}
+
+/* 
+    Function: db_get_database_name
+    Params: fd,
+            database_name
+    Description: get number database name
+    Return value: DB_FAILURE if error
+                  DB_SUCCESS if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+db_boolean_t db_get_database_name(int fd, char *database_name)
+{
+    off_t pos = point_to_database_name(fd);
+    if (pos == -1)
+    {
+        return DB_FAILURE;
+    }
+    ssize_t io_ret_val;
+    io_ret_val = db_read(fd, database_name, DB_MAX_LENGTH_DB_NAME);
+    DB_TRACE(("DB:db_set_database_name:read database name = %s\n", database_name));
+    if (io_ret_val != DB_MAX_LENGTH_DB_NAME)
     {
         DB_SET_ERROR(DB_WRITE_WRONG);
         return DB_FAILURE;

@@ -190,47 +190,25 @@ DATABASE db_open(char *db_name, char *db_path, int flag)
     //Create database
     if(flag == DB_CREATE)
     {
-        int ret_val;
         DB_TRACE(("DB:db_open: Create a new db!\n"));
-        // Write name in database
-        if(db_seek(db->fd, DB_POS_NAME_DATABASE, DB_BEGIN_FD) == -1)
-        {
-            DB_SET_ERROR(DB_SEEK_FD_FAIL);
-            return DB_NULL;
-        }
-        DB_TRACE(("DB:db_open:write:seek to name_db!\n"));
-
+        /* Write name in database */
         // Check length of db_name
         if(db_strlen(db_name) + 1 > DB_MAX_LENGTH_DB_NAME)
         {
             DB_SET_ERROR(DB_OUT_OF_BOUNDS);
-            return NULL;
+            return DB_NULL;
         }
 
-        int num_write = db_strlen(db_name) + 1;
-        DB_TRACE(("DB:db_open:write:db_name: %s at %ld\n", db_name, db_seek(db->fd, 0, DB_CURRENT_FD) ));
-        ret_val = db_write(db->fd, db_name, num_write);
-        if(ret_val != num_write)
+        if(db_set_database_name(db->fd, db_name) == DB_FAILURE)
         {
-            DB_SET_ERROR(DB_WRITE_WRONG);
             return DB_NULL;
         }
-        // Write number table in database
-        if(db_seek(db->fd, DB_POS_NUMBER_TABLE, DB_BEGIN_FD) == -1)
-        {
-            DB_SET_ERROR(DB_SEEK_FD_FAIL);
-            return DB_NULL;
-        }
-        
+
+        /* Write number table in database */
         // Because this is new db, number table is 0
         int num_table = 0;
-        DB_TRACE(("DB:db_open::write:num_table = %d at %ld\n", num_table, db_seek(db->fd, 0, DB_CURRENT_FD) ));
-        ret_val = db_write(db->fd, &num_table, DB_INT_SIZE);
-        if(ret_val != DB_INT_SIZE)
+        if(db_set_num_table(db->fd, num_table) == DB_FAILURE)
         {
-            perror("write!");
-            DB_TRACE(("DB:db_open:write: ret_val = %d\n", ret_val));
-            DB_SET_ERROR(DB_WRITE_WRONG);
             return DB_NULL;
         }
         // Write last_position
@@ -243,47 +221,20 @@ DATABASE db_open(char *db_name, char *db_path, int flag)
     }
 
     /* Read from db, info about database */
-    int ret_val, pos;
+    
     // Load database name
+    // Read 32 byte name db
+    db->database_name = (char *)db_alloc(DB_MAX_LENGTH_DB_NAME);
+    if(db_get_database_name(db->fd, db->database_name) == DB_FAILURE)
     {
-        pos = DB_POS_NAME_DATABASE;
-        if(db_seek(db->fd, DB_POS_NAME_DATABASE, DB_BEGIN_FD) == -1)
-        {
-            DB_SET_ERROR(DB_SEEK_FD_FAIL);
-            return DB_NULL;
-        }
-        // Read 32 byte name db
-        db->database_name = (char *) db_alloc(DB_MAX_LENGTH_DB_NAME);
-        ret_val = db_read(db->fd, db->database_name, DB_MAX_LENGTH_DB_NAME);
-        DB_TRACE(("DB:db_open:db_read: database name: %s\n", db->database_name));
-
-        if(ret_val < 0 || ret_val > DB_MAX_LENGTH_DB_NAME)
-        {
-            DB_SET_ERROR(DB_READ_WRONG);
-            return DB_NULL;
-        }else{
-            db->database_name[ret_val] = '\0';
-        }
+        return DB_NULL;
     }
-    
-    
-    {
-        // Read num table in db
-        pos = DB_POS_NUMBER_TABLE;
-        if(db_seek(db->fd, pos, DB_BEGIN_FD) == -1)
-        {
-            DB_SET_ERROR(DB_SEEK_FD_FAIL);
-            return DB_NULL;
-        }
 
-        ret_val = db_read(db->fd, &(db->num_table), DB_INT_SIZE);
-        DB_TRACE(("DB:db_open:db_read: number table = %d\n", db->num_table));
-        if(ret_val != DB_INT_SIZE)
-        {
-            DB_TRACE(("DB:db_open:db_read: ret_val = %d\n", ret_val));
-            DB_SET_ERROR(DB_READ_WRONG);
-            return DB_NULL;
-        }
+    /* Read num table in db */
+    db->num_table = db_get_num_table(db->fd);
+    if(db->num_table == -1)
+    {
+        return DB_NULL;
     }
 
     // Alloc table
@@ -311,18 +262,10 @@ DATABASE db_open(char *db_name, char *db_path, int flag)
 
 
     // Read last_position
-    if(db_seek(db->fd, DB_POS_LAST_POSITION, DB_BEGIN_FD) == -1)
+    db->last_position = db_get_last_position(db->fd);
+    if(db->last_position == -1) 
     {
-        DB_SET_ERROR(DB_SEEK_FD_FAIL);
         return DB_NULL;
-    }
-
-    ret_val = db_read(db->fd, &(db->last_position), DB_OFF_T_SIZE);
-    if(ret_val != DB_OFF_T_SIZE)
-    {
-        DB_SET_ERROR(DB_READ_WRONG);
-        return DB_NULL;
-    }
-    DB_TRACE(("DB:db_open:db_read: last_position= %ld\n", db->last_position));
+    }    
     return db;
 }
