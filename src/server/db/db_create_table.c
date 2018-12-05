@@ -100,9 +100,22 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
     do{
         flag_last_position = 0;
         off_t pos_table_i;
+
+        if(new_last_pos == db->last_position)
+        {
+            DB_TRACE(("DB:db_create_table:new_last_pos = last_position = %ld\n", new_last_pos));
+            flag_last_position = 1;
+            new_last_pos += DB_SINGLE_TABLE_SIZE;
+            continue;
+        }
+
         for (i = 0; i < db->num_table; i++)
         {
             pos_table_i = db_get_position_index_table(db->fd, i);
+            if(pos_table_i == -1)
+            {
+                return DB_NULL;
+            }
             // Check is any table_pos equal last_pos
             if(new_last_pos == pos_table_i)
             {
@@ -146,7 +159,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
         now_id_table = 1;
     }else
     {
-        now_id_table = db->tables[index_table].id_table + 1;
+        now_id_table = db->tables[index_table - 1].id_table + 1;
     }
 
     DB_TRACE(("DB:db_create_table:id_table = %d in pos %ld\n", now_id_table, db_seek(db->fd, 0, DB_CURRENT_FD) ));
@@ -328,6 +341,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
     /* Increase num_table */
     db->num_table = num_table;
     db->last_position = new_last_pos;
+    db->tables[index_table].id_table = now_id_table;
 
     return &(db->tables[index_table]);
 }
