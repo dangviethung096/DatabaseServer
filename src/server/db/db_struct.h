@@ -86,8 +86,8 @@ struct db_value
     // struct store data
     char flag;
     char row_id;
-    char reserve[2];                 //Use 3 byte re
-    char value[28];                 //Using 28 byte
+    char reserve[2];                //Use 2 byte reserve
+    char value[28];                 //Using 28 bytes store data
 };
 
 struct db_field_in_table_data
