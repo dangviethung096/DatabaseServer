@@ -72,7 +72,6 @@ static inline db_boolean_t db_read_table_info(DATABASE db)
             return DB_FAILURE;
         }
         
-        db->tables[i].table_name = (char *) db_alloc(DB_MAX_LENGTH_TABLE_NAME);
         io_ret_val = db_read(db->fd, db->tables[i].table_name, DB_MAX_LENGTH_TABLE_NAME);
         DB_TRACE(("DB:db_read_table_info: table name = %s at %ld\n", db->tables[i].table_name, pos));
         
@@ -99,7 +98,7 @@ static inline db_boolean_t db_read_table_info(DATABASE db)
             return DB_FAILURE;
         }
         /* Alloc memory for fields */
-        db->tables[i].fields = (db_field *)db_alloc(DB_MAX_FIELDS_IN_TABLE * DB_FIELD_INFO_SIZE);
+        db->tables[i].fields = (db_field_t *)db_alloc(DB_MAX_FIELDS_IN_TABLE * DB_FIELD_INFO_SIZE);
         for(j = 0; j < DB_MAX_FIELDS_IN_TABLE; j++)
         {
             db->tables[i].fields[j].index = -1;
@@ -108,26 +107,11 @@ static inline db_boolean_t db_read_table_info(DATABASE db)
         for(j = 0; j < db->tables[i].num_fields; j++)
         {
             // Alloc memory for field
-            db_field field;
-            
-            // Read field name
-            field.field_name = (char *)db_alloc(DB_MAX_LENGTH_FIELD_NAME);
-            io_ret_val = db_read(db->fd, field.field_name, DB_MAX_LENGTH_FIELD_NAME);
-            DB_TRACE(("DB:db_read_table_info: field name = %s at %ld\n", field.field_name, db_seek(db->fd, 0, DB_CURRENT_FD) - DB_MAX_LENGTH_TABLE_NAME ));
-            if (io_ret_val != DB_MAX_LENGTH_FIELD_NAME)
+            db_field_t field = db_get_index_field_info_in_table(db->fd, db->tables[i].position_table, j);
+            if(db_error_no != DB_NO_ERROR)
             {
-                DB_SET_ERROR(DB_READ_WRONG);
                 return DB_FAILURE;
             }
-            // Read index of field
-            io_ret_val = db_read(db->fd, &(field.index), DB_INDEX_T_SIZE);
-            DB_TRACE(("DB:db_read_table_info: index in table = %d at %ld\n", field.index, db_seek(db->fd, 0, DB_CURRENT_FD) - DB_INDEX_T_SIZE));
-            if (io_ret_val != DB_INDEX_T_SIZE)
-            {
-                DB_SET_ERROR(DB_READ_WRONG);
-                return DB_FAILURE;
-            }
-
             // Assign field
             db->tables[i].fields[field.index] = field;
         }
@@ -224,7 +208,6 @@ DATABASE db_open(char *db_name, char *db_path, int flag)
     
     // Load database name
     // Read 32 byte name db
-    db->database_name = (char *)db_alloc(DB_MAX_LENGTH_DB_NAME);
     if(db_get_database_name(db->fd, db->database_name) == DB_FAILURE)
     {
         return DB_NULL;

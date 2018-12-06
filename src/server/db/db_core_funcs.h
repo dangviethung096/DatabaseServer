@@ -45,6 +45,8 @@ db_boolean_t db_set_num_table(int fd, unsigned int num_table);
 db_boolean_t db_set_database_name(int fd, char *database_name);
 db_boolean_t db_get_database_name(int fd, char *database_name);
 
+db_field_t db_get_index_field_info_in_table(int fd, off_t table_pos, int index);
+db_boolean_t db_set_index_field_info_in_table(int fd, off_t table_pos, int index, db_field_t field);
 
 /* START: function with string */
 #define db_strncmp(str1, str2, num)                         \

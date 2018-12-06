@@ -19,9 +19,10 @@ int main()
     // Create a table
     {
         
-        db_field field[1];
-        field[0].field_name = "hung_id";
-
+        db_field_t field[1];
+        memcpy(field[0].field_name, "hung_id", strlen("hung_id"));
+        field[0].field_name[strlen("hung_id")] = '\0';
+        
         if(db_create_table(db, "test_table", field, 1) != NULL)
         {
             printf("Success\n");

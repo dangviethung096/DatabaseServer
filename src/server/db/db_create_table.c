@@ -15,7 +15,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields, int num_field)
+db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fields, int num_field)
 {
     // Declare variable
     off_t pos_table = db->last_position;
@@ -92,7 +92,6 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
             return DB_NULL;
         }
     }
-
 
     // Seek to new last position
     // Find new last position
@@ -219,8 +218,10 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
     int index;
     for(index = 0; index < num_field; index++)
     {
-        off_t field_pos = db_seek(db->fd, pos_first_field_in_table + index * DB_FIELD_IN_TABLE_SIZE , DB_BEGIN_FD);
-        
+        /* Field_id */
+        fields[index].field_id = index + 1;
+
+        /* Field name */
         int num_write = db_strlen(fields[index].field_name) + 1;
         // Check valid
         if(num_write > DB_MAX_LENGTH_FIELD_NAME)
@@ -228,17 +229,10 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
             DB_SET_ERROR(DB_OUT_OF_BOUNDS);
             return DB_NULL;
         }
-        DB_TRACE(("DB:db_create_table:field_name = %s at %ld\n", fields[index].field_name, db_seek(db->fd, 0, DB_CURRENT_FD)));
-        io_ret_val = db_write(db->fd, fields[index].field_name, num_write);
-        if(io_ret_val != num_write)
-        {
-            DB_SET_ERROR(DB_WRITE_WRONG);
-            return DB_NULL;
-        }
 
-        // Hashing to find index fd
+        /* Hashing to find index fd */
         db_key_t key;
-        key.val = fields[index].field_name;
+        key.val = (U8bit *) fields[index].field_name;
         key.size = db_strlen(key.val);
         DB_TRACE(("DB:db_create_table:hashing index with key.val = %s, key.size = %d\n", key.val, key.size));
         db_first_hash_ret_t hval = db_first_hash(key);
@@ -275,20 +269,11 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
             }while(second_index != first_idx);
         }
 
-        // Seek to index fd
+        if(db_set_index_field_info_in_table(db->fd, pos_table, index, fields[index]) == DB_FAILURE)
+        {
+            return DB_NULL;
+        }
         
-        if(db_seek(db->fd, field_pos + DB_POS_INDEX_IN_FIELD_INFO, DB_BEGIN_FD) == -1)
-        {
-            DB_SET_ERROR(DB_SEEK_FD_FAIL);
-            return DB_NULL;
-        }
-        DB_TRACE(("DB:db_create_table:write index of field = %d at %ld\n", fields[index].index, db_seek(db->fd, 0, DB_CURRENT_FD) ));
-        io_ret_val = db_write(db->fd, &(fields[index].index), DB_INDEX_T_SIZE);
-        if(io_ret_val != DB_INDEX_T_SIZE)
-        {
-            DB_SET_ERROR(DB_WRITE_WRONG);
-            return DB_NULL;
-        }
         /* Write in fields bucket */
         // Set field is used in fields bucket
         db_flag_t flag = DB_FLAG_USED;
@@ -339,7 +324,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
     db->last_position = new_last_pos;
     db->tables[index_table].id_table = now_id_table;
     db->tables[index_table].num_fields = num_field;
-    db->tables[index_table].fields = (db_field *) db_alloc(DB_MAX_FIELDS_IN_TABLE * DB_FIELD_INFO_SIZE);
+    db->tables[index_table].fields = (db_field_t *) db_alloc(DB_MAX_FIELDS_IN_TABLE * DB_FIELD_INFO_SIZE);
     /* Init all field */
     for(i = 0; i < DB_MAX_FIELDS_IN_TABLE; i++)
     {
@@ -348,8 +333,10 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields
 
     for(i = 0; i < num_field; i++)
     {
-        db->tables[index_table].fields[fields[i].index].field_name = (char *) db_alloc(DB_MAX_LENGTH_FIELD_NAME);
-        db->tables[index_table].fields[fields[i].index].index = fields[i].index;
+        int index_field = fields[i].index;
+        db->tables[index_table].fields[index_field].field_id = fields[i].field_id;
+        memcpy(db->tables[index_table].fields[index_field].field_name, fields[i].field_name, DB_MAX_LENGTH_FIELD_NAME);
+        db->tables[index_table].fields[index_field].index = fields[i].index;
     }
 
     return &(db->tables[index_table]);

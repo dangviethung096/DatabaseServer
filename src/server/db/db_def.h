@@ -16,9 +16,11 @@
 #define DB_INDEX_T_SIZE                 sizeof(db_index_t)
 #define DB_TABLE_INFO_TYPE_SIZE         sizeof(db_table_info)
 #define DB_U_8_BIT_SIZE                 sizeof(U8bit)
+#define DB_U_16_BIT_SIZE                sizeof(U16bit)
+#define DB_U_32_BIT_SIZE                sizeof(U32bit)
 #define DB_TABLE_INFO_SIZE              sizeof(db_table_info)
 #define DB_INT_SIZE                     sizeof(int)
-#define DB_FIELD_INFO_SIZE              sizeof(db_field)         
+#define DB_FIELD_INFO_SIZE              sizeof(db_field_t)         
 
 #define DB_FIELD_IN_TABLE_SIZE          sizeof(struct db_field_in_table_data)
 /* End: size of struct or type in db */
@@ -40,6 +42,9 @@
 /* END: define max length, size, vv..v */
 
 /* START: define size */
+#define DB_UNIT_SIZE_IN_FIELDS_BUCKET  sizeof(struct db_value);
+#define DB_UNIT_SIZE_IN_ROWS_BUCKET    DB_OFF_T_SIZE
+
 #define DB_ROW_SIZE_IN_ROW_BUCKET      sizeof(struct db_row_data)
 #define DB_FIELD_SIZE_IN_FIELD_BUCKET  sizeof(struct db_field_data)
 
@@ -106,8 +111,9 @@
 #define DB_POS_FIELDS_BUCKET_IN_TABLE   DB_POS_ROWS_BUCKET_IN_TABLE + DB_ROWS_BUCKET_SIZE
 
 
-#define DB_POS_NAME_IN_FIELD_INFO       0
-#define DB_POS_INDEX_IN_FIELD_INFO      DB_POS_NAME_IN_FIELD_INFO + DB_MAX_LENGTH_FIELD_NAME
+// #define DB_POS_FIELD_ID_IN_FIELD_INFO   0
+// #define DB_POS_NAME_IN_FIELD_INFO       DB_POS_FIELD_ID_IN_FIELD_INFO + DB_U_8_BIT_SIZE
+// #define DB_POS_INDEX_IN_FIELD_INFO      DB_POS_NAME_IN_FIELD_INFO + DB_MAX_LENGTH_FIELD_NAME
 
 #define DB_POS_FLAG_IN_FIELDS_BUCKET     0
 

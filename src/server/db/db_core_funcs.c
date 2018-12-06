@@ -60,7 +60,7 @@ long int db_find_nearest_prime_number(long int input)
     Caution: this function change position of fd. 
              So after call this function, seek to old position
  */
-off_t db_point_to_index_fields_bucket(int fd, off_t pos_fields_bucket, db_index_t index)
+off_t db_point_to_index_fields_bucket(int fd, off_t table_pos, db_index_t index)
 {
     if(index > DB_MAX_FIELDS_IN_TABLE)
     {
@@ -69,14 +69,14 @@ off_t db_point_to_index_fields_bucket(int fd, off_t pos_fields_bucket, db_index_
         return -1;
     }
 
-    off_t pos = pos_fields_bucket + index * DB_FIELD_SIZE_IN_FIELD_BUCKET;
+    off_t pos = table_pos + DB_POS_FIELDS_BUCKET_IN_TABLE + index * DB_FIELD_SIZE_IN_FIELD_BUCKET;
     if(db_seek(fd, pos, DB_BEGIN_FD) == -1)
     {
         DB_TRACE(("DB:db_point_to_index_fields_bucket: seek_fail!\n"));
         DB_SET_ERROR(DB_SEEK_FD_FAIL);
         return -1;
     }
-
+    DB_TRACE(("DB:db_point_to_index_fields_bucket: field index = %d at %ld!\n", index, pos));
     return pos;
 }
 /* 
@@ -195,7 +195,7 @@ db_boolean_t db_is_field_in_fields_bucket_used(int fd, off_t pos_fields_bucket, 
 /* 
     Function: db_point_to_index_rows_bucket
     Params: fd,
-            pos_rows_bucket,
+            table_pos,
             index
     Description: 
                  
@@ -204,23 +204,23 @@ db_boolean_t db_is_field_in_fields_bucket_used(int fd, off_t pos_fields_bucket, 
     Caution: this function change position of fd. 
              So after call this function, seek to old position
  */
-off_t db_point_to_index_rows_bucket(int fd, off_t pos_rows_bucket, db_index_t index)
+off_t db_point_to_index_rows_bucket(int fd, off_t table_pos, db_index_t index)
 {
     if(index > DB_MAX_ROWS_IN_BUCKET)
     {
-        DB_TRACE(("DB:db_is_row_in_rows_bucket_used: out of bound, index = %d!\n", index));
+        DB_TRACE(("DB:db_point_to_index_rows_bucket: out of bound, index = %d!\n", index));
         DB_SET_ERROR(DB_OUT_OF_BOUNDS);
         return -1;
     }
 
-    off_t pos = pos_rows_bucket + index * DB_ROW_SIZE_IN_ROW_BUCKET;
+    off_t pos = table_pos + DB_POS_ROWS_BUCKET_IN_TABLE + index * DB_ROW_SIZE_IN_ROW_BUCKET;
     if(db_seek(fd, pos, DB_BEGIN_FD) == -1)
     {
-        DB_TRACE(("DB:db_is_row_in_rows_bucket_used: seek_fail!\n"));
+        DB_TRACE(("DB:db_point_to_index_rows_bucket: seek_fail!\n"));
         DB_SET_ERROR(DB_SEEK_FD_FAIL);
         return -1;
     }
-
+    DB_TRACE(("DB:db_point_to_index_rows_bucket: index_rows = %d at %ld!\n", index, pos));
     return pos;
 }
 
@@ -651,5 +651,174 @@ db_boolean_t db_get_database_name(int fd, char *database_name)
         return DB_FAILURE;
     }
 
+    return DB_SUCCESS;
+}
+
+
+/* 
+    Function: db_point_to_value_in_fields_bucket
+    Params: fd,
+            table_pos,
+            fields_index,
+            value_index
+    Description: point to value in a index fields bucket
+    Return value: -1 if error
+                  position of number table if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+
+off_t db_point_to_value_in_fields_bucket(int fd, off_t table_pos, int fields_index, int value_index)
+{
+    off_t pos = db_point_to_index_fields_bucket(fd, table_pos, fields_index);
+    if(pos == -1)
+    {
+        return -1;
+    }
+    pos = pos + value_index * DB_UNIT_SIZE_IN_FIELDS_BUCKET;
+    if (db_seek(fd, pos, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return -1;
+    }
+    DB_TRACE(("DB:db_point_to_value_in_fields_bucket: value_index = %d at %ld\n", fields_index, pos));
+    return pos;
+}
+
+
+
+/* 
+    Function: db_point_to_field_in_rows_bucket
+    Params: fd,
+            table_pos,
+            rows_index,
+            field_index
+    Description: point to fields of rows bucket
+    Return value: -1 if error
+                  position of number table if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+
+off_t db_point_to_field_in_rows_bucket(int fd, off_t table_pos, int rows_index, int field_index)
+{
+    off_t pos = db_point_to_index_rows_bucket(fd, table_pos, rows_index);
+    
+    if (db_seek(fd, pos, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return -1;
+    }
+    DB_TRACE(("DB:db_point_to_field_in_rows_bucket:point fields bucket %d at %ld\n", field_index, pos));
+    return pos;
+}
+
+/* 
+    Function: db_point_to_table_info_in_table
+    Params: fd,
+            table_pos,
+    Description: point to table info in table
+    Return value: -1 if error
+                  position of number table if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+
+off_t db_point_to_table_info_in_table(int fd, off_t table_pos)
+{
+    off_t pos = table_pos + DB_POS_TABLE_INFO_IN_TABLE;
+    
+    if (db_seek(fd, pos, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return -1;
+    }
+    DB_TRACE(("DB:db_point_to_table_info_in_table:point table info at %ld\n", pos));
+    return pos;
+}
+
+/* 
+    Function: db_point_to_index_field_info_in_table
+    Params: fd,
+            table_pos,
+            index
+    Description: point to index field info in table
+    Return value: -1 if error
+                  position of number table if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+
+off_t db_point_to_index_field_info_in_table(int fd, off_t table_pos, int index)
+{
+    off_t pos = db_point_to_table_info_in_table(fd, table_pos);
+    
+    pos += DB_POS_FIELDS_IN_TABLE +  index * DB_FIELD_INFO_SIZE;
+    
+    if (db_seek(fd, pos, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return -1;
+    }
+    DB_TRACE(("DB:db_point_to_index_field_info_in_table:point index field info = %d at %ld\n", index, pos));
+    return pos;
+}
+
+/* 
+    Function: db_get_index_field_info_in_table
+    Params: fd,
+            table_pos,
+            index
+    Description: point to index field info in table
+    Return value: -1 if error
+                  position of number table if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+db_field_t db_get_index_field_info_in_table(int fd, off_t table_pos, int index)
+{
+    db_field_t field;
+    if(db_point_to_index_field_info_in_table(fd, table_pos, index) == -1)
+    {
+        return field;
+    }
+    ssize_t io_ret_val = db_read(fd, &field, DB_FIELD_INFO_SIZE);
+    if(io_ret_val != DB_FIELD_INFO_SIZE)
+    {
+        DB_SET_ERROR(DB_READ_WRONG);
+    }
+    DB_TRACE(("DB:db_get_index_field_info_in_table: field id = %d\n", field.field_id));
+    DB_TRACE(("DB:db_get_index_field_info_in_table: field name = %s\n", field.field_name));
+    DB_TRACE(("DB:db_get_index_field_info_in_table: field index = %d\n", field.index));
+    return field;
+}
+
+
+/* 
+    Function: db_set_index_field_info_in_table
+    Params: fd,
+            table_pos,
+            index
+    Description: point to index field info in table
+    Return value: -1 if error
+                  position of number table if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+db_boolean_t db_set_index_field_info_in_table(int fd, off_t table_pos, int index, db_field_t field)
+{
+    if(db_point_to_index_field_info_in_table(fd, table_pos, index) == -1)
+    {
+        return DB_FAILURE;
+    }
+    ssize_t io_ret_val = db_write(fd, &field, DB_FIELD_INFO_SIZE);
+    if(io_ret_val != DB_FIELD_INFO_SIZE)
+    {
+        DB_SET_ERROR(DB_WRITE_WRONG);
+        return DB_FAILURE;
+    }
+    DB_TRACE(("DB:db_set_index_field_info_in_table: field id = %d\n", field.field_id));
+    DB_TRACE(("DB:db_set_index_field_info_in_table: field name = %s\n", field.field_name));
+    DB_TRACE(("DB:db_set_index_field_info_in_table: field index = %d\n", field.index));
     return DB_SUCCESS;
 }

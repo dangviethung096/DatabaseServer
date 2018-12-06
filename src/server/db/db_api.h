@@ -13,7 +13,7 @@
 #include "db_def.h"
 
 DATABASE db_open(char *db_name, char *db_path, int flag);
-db_table_info * db_create_table(DATABASE db, char *table_name, db_field * fields, int num_field);
+db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fields, int num_field);
 db_boolean_t db_remove_table(DATABASE db, char *table_name);
 void db_close(DATABASE db);
 /* API design */
