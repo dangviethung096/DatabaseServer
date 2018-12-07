@@ -822,3 +822,25 @@ db_boolean_t db_set_index_field_info_in_table(int fd, off_t table_pos, int index
     DB_TRACE(("DB:db_set_index_field_info_in_table: field index = %d\n", field.index));
     return DB_SUCCESS;
 }
+/* 
+    Function: point_to_index_field_bucket_by_key
+    Params: fd,
+            table_pos,
+            index
+    Description: point to index field info in table
+    Return value: -1 if error
+                  position of number table if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+off_t point_to_index_field_bucket_by_key(int fd, off_t table_pos,db_key_t key)
+{
+    db_first_hash_ret_t hval = db_first_hash(key);
+    int index = hval % DB_MAX_FIELDS_IN_TABLE;
+    // Get the field in index and compare with key
+    off_t pos = db_point_to_index_field_info_in_table(fd, table_pos, index);
+    if(pos == -1)
+    {
+        return -1;
+    }
+}
