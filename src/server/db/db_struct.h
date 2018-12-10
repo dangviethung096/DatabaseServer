@@ -64,6 +64,7 @@ struct db_file_info {
     char database_name[DB_MAX_LENGTH_DB_NAME];
     // Number table
     unsigned int num_table;
+    unsigned int select_table;
     // Schema in tables
     db_table_info * tables;
     // This field will show position that can add new single table
