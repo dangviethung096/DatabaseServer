@@ -124,13 +124,13 @@ struct db_row_data
 
 struct db_field_data
 {
-    struct db_value value[DB_MAX_ROWS_IN_BUCKET];
+    struct db_value value[DB_MAX_ROWS_IN_BUCKET + 1];
 };
 
 
 struct db_fields_bucket_data
 {
-    struct db_field_data fields[DB_MAX_FIELDS_IN_TABLE];
+    struct db_field_data fields[DB_MAX_FIELDS_IN_TABLE + 1];
 };
 
 struct db_rows_bucket_data

@@ -9,7 +9,3 @@
 #include "db_struct.h"
 #include "db_def.h"
 
-db_value_t db_search(db_key_t key)
-{
-    
-}

@@ -250,7 +250,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
 
         }else
         {
-            int hval2 = 1 + hval % (DB_MAX_FIELDS_IN_TABLE);
+            int hval2 = 1 + hval % (DB_MAX_FIELDS_IN_TABLE - 2);
             db_second_hash_ret_t second_index = first_idx;
             do
             {

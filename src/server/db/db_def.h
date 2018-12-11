@@ -42,7 +42,7 @@
 /* END: define max length, size, vv..v */
 
 /* START: define size */
-#define DB_UNIT_SIZE_IN_FIELDS_BUCKET  sizeof(struct db_value);
+#define DB_UNIT_SIZE_IN_FIELDS_BUCKET  sizeof(struct db_value)
 #define DB_UNIT_SIZE_IN_ROWS_BUCKET    DB_OFF_T_SIZE
 
 #define DB_ROW_SIZE_IN_ROW_BUCKET      sizeof(struct db_row_data)
@@ -50,7 +50,7 @@
 
 #define DB_ROWS_BUCKET_SIZE            sizeof(struct db_rows_bucket_data)
 #define DB_FIELDS_BUCKET_SIZE          sizeof(struct db_fields_bucket_data)
-#define DB_TABLE_INFO_DATA_SIZE             sizeof(struct db_table_info_data)
+#define DB_TABLE_INFO_DATA_SIZE        sizeof(struct db_table_info_data)
 
 #define DB_SINGLE_TABLE_SIZE           DB_ROWS_BUCKET_SIZE + DB_FIELDS_BUCKET_SIZE + DB_TABLE_INFO_DATA_SIZE
 /* END: define size */

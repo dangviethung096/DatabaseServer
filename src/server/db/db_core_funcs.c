@@ -52,7 +52,7 @@ long int db_find_nearest_prime_number(long int input)
 /* 
     Function: db_point_to_fields_bucket_by_index
     Params: fd,
-            pos_rows_bucket,
+            table_pos,
             index
     Description: point fd to index of fields bucket
                  
@@ -83,7 +83,7 @@ off_t db_point_to_fields_bucket_by_index(int fd, off_t table_pos, db_index_t ind
 /* 
     Function: db_get_flag_in_fields_bucket
     Params: fd,
-            pos_rows_bucket,
+            table_pos,
             index,
             flag
     Description: get flag from fields bucket
@@ -93,10 +93,10 @@ off_t db_point_to_fields_bucket_by_index(int fd, off_t table_pos, db_index_t ind
     Caution: this function change position of fd. 
              So after call this function, seek to old position
  */
-db_boolean_t db_get_flag_in_fields_bucket(int fd, off_t pos_fields_bucket, db_index_t index, db_flag_t * flag)
+db_boolean_t db_get_flag_in_fields_bucket(int fd, off_t table_pos, db_index_t index, db_flag_t * flag)
 {
-    off_t pos = db_point_to_fields_bucket_by_index(fd, pos_fields_bucket, index);
-    if(db_point_to_fields_bucket_by_index(fd, pos_fields_bucket, index) == -1)
+    off_t pos = db_point_to_fields_bucket_by_index(fd, table_pos, index);
+    if(db_point_to_fields_bucket_by_index(fd, table_pos, index) == -1)
     {
         return DB_FAILURE;
     }
@@ -125,7 +125,7 @@ db_boolean_t db_get_flag_in_fields_bucket(int fd, off_t pos_fields_bucket, db_in
 /* 
     Function: db_set_flag_in_fields_bucket
     Params: fd,
-            pos_rows_bucket,
+            table_pos,
             index,
             flag
     Description: set flag from fields bucket
@@ -135,10 +135,10 @@ db_boolean_t db_get_flag_in_fields_bucket(int fd, off_t pos_fields_bucket, db_in
     Caution: this function change position of fd. 
              So after call this function, seek to old position
  */
-db_boolean_t db_set_flag_in_fields_bucket(int fd, off_t pos_fields_bucket, db_index_t index, db_flag_t flag)
+db_boolean_t db_set_flag_in_fields_bucket(int fd, off_t table_pos, db_index_t index, db_flag_t flag)
 {
     
-    off_t pos = db_point_to_fields_bucket_by_index(fd, pos_fields_bucket, index);
+    off_t pos = db_point_to_fields_bucket_by_index(fd, table_pos, index);
     if(pos == -1)
     {
         return DB_FAILURE;
@@ -168,7 +168,7 @@ db_boolean_t db_set_flag_in_fields_bucket(int fd, off_t pos_fields_bucket, db_in
 /* 
     Function: db_is_field_in_fields_bucket_used
     Params: fd,
-            pos_fields_bucket,
+            table_pos,
             index
     Description: check that field_index is used or unused
                  
@@ -177,10 +177,10 @@ db_boolean_t db_set_flag_in_fields_bucket(int fd, off_t pos_fields_bucket, db_in
     Caution: this function change position of fd. 
              So after call this function, seek to old position
  */
-db_boolean_t db_is_field_in_fields_bucket_used(int fd, off_t pos_fields_bucket, db_index_t index)
+db_boolean_t db_is_field_in_fields_bucket_used(int fd, off_t table_pos, db_index_t index)
 {
     db_flag_t flag;
-    if(db_get_flag_in_fields_bucket(fd, pos_fields_bucket, index, &flag) == DB_FAILURE)
+    if(db_get_flag_in_fields_bucket(fd, table_pos, index, &flag) == DB_FAILURE)
     {
         return DB_FALSE;
     }
@@ -228,7 +228,7 @@ off_t db_point_to_rows_bucket_by_index(int fd, off_t table_pos, db_index_t index
 /* 
     Function: db_get_flag_in_rows_bucket
     Params: fd,
-            pos_rows_bucket,
+            table_pos,
             index,
             flag
     Description: get flag in rows bucket
@@ -238,9 +238,9 @@ off_t db_point_to_rows_bucket_by_index(int fd, off_t table_pos, db_index_t index
     Caution: this function change position of fd. 
              So after call this function, seek to old position
  */
-db_boolean_t db_get_flag_in_rows_bucket(int fd, off_t pos_rows_bucket, db_index_t index, db_flag_t * flag)
+db_boolean_t db_get_flag_in_rows_bucket(int fd, off_t table_pos, db_index_t index, db_flag_t * flag)
 {
-    off_t pos = db_point_to_rows_bucket_by_index(fd, pos_rows_bucket, index);
+    off_t pos = db_point_to_rows_bucket_by_index(fd, table_pos, index);
     if(pos == -1)
     {
         return DB_FAILURE;
@@ -271,7 +271,7 @@ db_boolean_t db_get_flag_in_rows_bucket(int fd, off_t pos_rows_bucket, db_index_
 /* 
     Function: db_set_flag_in_rows_bucket
     Params: fd,
-            pos_rows_bucket,
+            table_pos,
             index,
             flag
     Description: set flag in rows bucket
@@ -281,9 +281,9 @@ db_boolean_t db_get_flag_in_rows_bucket(int fd, off_t pos_rows_bucket, db_index_
     Caution: this function change position of fd. 
              So after call this function, seek to old position
  */
-db_boolean_t db_set_flag_in_rows_bucket(int fd, off_t pos_rows_bucket, db_index_t index, db_flag_t flag)
+db_boolean_t db_set_flag_in_rows_bucket(int fd, off_t table_pos, db_index_t index, db_flag_t flag)
 {
-    off_t pos = db_point_to_rows_bucket_by_index(fd, pos_rows_bucket, index);
+    off_t pos = db_point_to_rows_bucket_by_index(fd, table_pos, index);
     if(pos == -1)
     {
         return DB_FAILURE;
@@ -312,7 +312,7 @@ db_boolean_t db_set_flag_in_rows_bucket(int fd, off_t pos_rows_bucket, db_index_
 /* 
     Function: db_is_row_in_rows_bucket_used
     Params: fd,
-            pos_rows_bucket,
+            table_pos,
             index
     Description: check that rows_index is used or unused
                  
@@ -321,10 +321,10 @@ db_boolean_t db_set_flag_in_rows_bucket(int fd, off_t pos_rows_bucket, db_index_
     Caution: this function change position of fd. 
              So after call this function, seek to old position
  */
-db_boolean_t db_is_row_in_rows_bucket_used(int fd, off_t pos_rows_bucket, db_index_t index)
+db_boolean_t db_is_row_in_rows_bucket_used(int fd, off_t table_pos, db_index_t index)
 {
     db_flag_t flag;
-    flag = db_get_flag_in_rows_bucket(fd, pos_rows_bucket, index, &flag);
+    flag = db_get_flag_in_rows_bucket(fd, table_pos, index, &flag);
     if((flag & DB_FLAG_NOT_USED))
     {
         return DB_TRUE;
@@ -657,37 +657,6 @@ db_boolean_t db_get_database_name(int fd, char *database_name)
 }
 
 
-/* 
-    Function: db_point_to_fields_bucket_by_value
-    Params: fd,
-            table_pos,
-            fields_index,
-            value_index
-    Description: point to value in a index fields bucket
-    Return value: -1 if error
-                  position of number table if success
-    Caution: this function change position of fd. 
-             So after call this function, seek to old position
- */
-
-off_t db_point_to_fields_bucket_by_value(int fd, off_t table_pos, int fields_index, int value_index)
-{
-    off_t pos = db_point_to_fields_bucket_by_index(fd, table_pos, fields_index);
-    if(pos == -1)
-    {
-        return -1;
-    }
-    pos = pos + value_index * DB_UNIT_SIZE_IN_FIELDS_BUCKET;
-    if (db_seek(fd, pos, DB_BEGIN_FD) == -1)
-    {
-        DB_SET_ERROR(DB_SEEK_FD_FAIL);
-        return -1;
-    }
-    DB_TRACE(("DB:db_point_to_fields_bucket_by_value: value_index = %d at %ld\n", fields_index, pos));
-    return pos;
-}
-
-
 
 /* 
     Function: db_point_to_rows_bucket_by_field
@@ -824,6 +793,35 @@ db_boolean_t db_set_index_field_info_in_table(int fd, off_t table_pos, int index
     DB_TRACE(("DB:db_set_index_field_info_in_table: field index = %d\n", field.index));
     return DB_SUCCESS;
 }
+
+/* 
+    Function: db_get_index_field_in_fields_bucket_by_field_name
+    Params: fd,
+            table,
+            field_name
+    Description: point to index field info in table
+    Return value: -1 if error
+                  position of number table if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+int db_get_index_field_in_fields_bucket_by_field_name(int fd, db_table_info *table, char *field_name)
+{
+    db_first_hash_ret_t hval = 0;
+    int num_hash = 0;
+    int index = 0;
+    off_t fields_bucket_pos = table->position_table + DB_POS_FIELDS_BUCKET_IN_TABLE;
+    db_hash_function(field_name, &hval, DB_MAX_FIELDS_IN_TABLE, &num_hash, &index);
+
+    while (db_strncmp(table->fields[index].field_name, field_name, db_length_str(field_name)) == 0 && db_is_field_in_fields_bucket_used(fd, fields_bucket_pos, index) == DB_TRUE)
+    {
+        DB_TRACE(("DB:db_get_index_field_in_fields_bucket_by_field_name:index = %d\n", index));
+        db_hash_function(field_name, &hval, DB_MAX_FIELDS_IN_TABLE, &num_hash, &index);
+    }
+
+    return index;
+}
+
 /* 
     Function: db_point_to_fields_bucket_by_field_name
     Params: fd,
@@ -838,37 +836,19 @@ db_boolean_t db_set_index_field_info_in_table(int fd, off_t table_pos, int index
 off_t db_point_to_fields_bucket_by_field_name(int fd, db_table_info * table, char * field_name)
 {
     off_t pos;
-    int first_index;
-    off_t fields_bucket_pos = table->position_table + DB_POS_FIELDS_BUCKET_IN_TABLE;
-    // Get first hash
-    db_key_t key;
-    key.val = field_name;
-    key.size = db_strlen(field_name);
-    db_first_hash_ret_t hval = db_first_hash(key);
-    first_index = hval % DB_MAX_FIELDS_IN_TABLE;
-    DB_TRACE(("DB:db_point_to_fields_bucket_by_field_name:first_index = %d\n", first_index));
-    if(db_strcmp(table->fields[first_index].field_name , field_name, db_strlen(field_name) + 1) == 0
-        && db_is_field_in_fields_bucket_used(fd, fields_bucket_pos, first_index) == DB_TRUE)
+    
+    int field_index = db_get_index_field_in_fields_bucket_by_field_name(fd, table, field_name);
+
+    pos = db_point_to_fields_bucket_by_index(fd, table->position_table, field_index);
+    if (pos == -1)
     {
-        pos = db_point_to_fields_bucket_by_index(fd, table->position_table, first_index);
-    }else
-    {
-        int hval2 = 1+ hval % (DB_MAX_FIELDS_IN_TABLE);
-        db_second_hash_ret_t second_index = first_index;
-        do
-        {
-            second_index = db_second_hash(hval2, DB_MAX_FIELDS_IN_TABLE, second_index);
-            DB_TRACE(("DB:db_point_to_fields_bucket_by_field_name:index in second hash = %d\n", second_index));
-            if(db_strcmp(table->fields[second_index].field_name , field_name, db_strlen(field_name) + 1) == 0
-                && db_is_field_in_fields_bucket_used(fd, fields_bucket_pos, second_index) == DB_TRUE)
-            {
-                pos = db_point_to_fields_bucket_by_index(fd, table->position_table, first_index);
-            }
-        }while(second_index != first_index);
+        return -1;
     }
     DB_TRACE(("DB:db_point_to_fields_bucket_by_field_name:pos = %ld\n", pos));
     return pos;
 }
+
+
 
 /* 
     Function: db_get_index_table_from_table_name
@@ -918,8 +898,9 @@ off_t db_point_to_fields_bucket_by_value_index(int fd, off_t fields_pos, db_inde
     DB_TRACE(("DB:db_point_to_fields_bucket_by_value_index:pos = %ld\n", pos));
     return pos;
 }
+
 /* 
-    Function: 
+    Function: db_get_value_in_fields_bucket
     Params: fd,
             fields_pos,
             value_index
@@ -929,24 +910,80 @@ off_t db_point_to_fields_bucket_by_value_index(int fd, off_t fields_pos, db_inde
     Caution: this function change position of fd. 
              So after call this function, seek to old position
 */
+db_boolean_t db_get_value_in_fields_bucket(int fd, off_t field_pos, db_index_t value_index, struct db_value * value)
+{
+    off_t pos = db_point_to_fields_bucket_by_value_index(fd, field_pos, value_index);
+    if (pos == -1)
+    {
+        return DB_FAILURE;
+    }
+
+    ssize_t io_ret_val = db_read(fd, value, DB_UNIT_SIZE_IN_FIELDS_BUCKET);
+    DB_TRACE(("DB:db_get_value_in_fields_bucket: number read = %lu at %ld\n", io_ret_val,  pos));
+    if( io_ret_val == -1 )
+    {
+        DB_SET_ERROR(DB_READ_WRONG);
+        return DB_FAILURE;
+    }
+
+    return DB_SUCCESS;
+}
 
 /* 
-    Function: db_search_new_mem_in_fields_bucket_by_value
-    Params: db,
-            table_name
-    Description: search new memory for store value in fields bucket
+    Function: db_set_value_in_fields_bucket
+    Params: fd,
+            fields_pos,
+            value_index
+    Description: Set value in field bucket
     Return value: -1 if cannot found any table_name in database
                   index of table if success
     Caution: this function change position of fd. 
              So after call this function, seek to old position
- */
-off_t db_search_new_mem_in_fields_bucket_by_value(int fd, off_t fields_bucket_pos, db_index_t field_index, char * value)
+*/
+db_boolean_t db_set_value_in_fields_bucket(int fd, off_t field_pos, db_index_t value_index, db_value_field_t value)
 {
-    db_key_t key;
-    key.size = db_strlen(value);
-    key.val = value;
-    db_first_hash_ret_t hval = db_first_hash(key);
-    int first_index = hval % DB_MAX_ROWS_IN_BUCKET;
-    
-    
+    off_t pos = db_point_to_fields_bucket_by_value_index(fd, field_pos, value_index);
+    if (pos == -1)
+    {
+        return DB_FAILURE;
+    }
+    ssize_t io_ret_val = db_write ( fd, &value, DB_UNIT_SIZE_IN_FIELDS_BUCKET );
+
+    DB_TRACE(("DB:db_set_value_in_fields_bucket: number write = %lu at %ld\n", io_ret_val, pos));
+    if (io_ret_val == -1)
+    {
+        DB_SET_ERROR(DB_WRITE_WRONG);
+        return DB_FAILURE;
+    }
+
+    return DB_SUCCESS;
 }
+
+/* 
+    Function: db_is_value_in_field_bucket_used
+    Params: fd,
+            fields_pos,
+            value_index
+    Description: search new memory for store value in fields bucket
+    Return value: DB_FALSE if value is not used
+                  DB_TRUE if value is used
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+*/
+db_boolean_t db_is_value_in_field_bucket_used(int fd, off_t field_pos, db_index_t value_index)
+{
+    // Get value pos
+    db_value_field_t value;
+    if(db_get_value_in_fields_bucket(fd, field_pos, value_index, &value) == DB_FAILURE)
+    {
+        return DB_FAILURE;
+    }
+    
+    if(value.flag == DB_FLAG_USED)
+    {
+        return DB_TRUE;
+    }
+    
+    return DB_FALSE;
+}
+
