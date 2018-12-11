@@ -13,7 +13,7 @@
 
 db_first_hash_ret_t db_first_hash(db_key_t key);
 db_second_hash_ret_t db_second_hash(int hval2, int table_size, int index);
-void db_hash_function(char *value, db_first_hash_ret_t *hval, int table_size, int *num_hash, int *index);
+void db_hash_function(U8bit *value, db_first_hash_ret_t *hval, int table_size, int *num_hash, int *index);
 
 #endif
 

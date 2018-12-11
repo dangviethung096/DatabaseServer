@@ -66,7 +66,7 @@ db_second_hash_ret_t db_second_hash(int hval2, int table_size, int index)
     Caution: this function change position of fd. 
              So after call this function, seek to old position
 */
-void db_hash_function(char *value, db_first_hash_ret_t *hval, int table_size, int *num_hash, int *index)
+void db_hash_function(U8bit * value, db_first_hash_ret_t *hval, int table_size, int *num_hash, int *index)
 {
     if (*num_hash == 0)
     {
