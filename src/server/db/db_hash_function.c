@@ -8,6 +8,7 @@
  */
 #include "db_def.h"
 #include "db_struct.h"
+#include "db_core_funcs.h"
 /* 
     Function: db_first_hash
     Params: key,
@@ -70,12 +71,12 @@ void db_hash_function(char *value, db_first_hash_ret_t *hval, int table_size, in
     if (*num_hash == 0)
     {
         db_key_t key;
-        key.val = value;
+        key.val = (U8bit *) value;
         key.size = db_strlen(value);
         *hval = db_first_hash(key);
         *index = (*hval) % table_size + 1;
         num_hash++;
-        DB_TRACE(("DB:db_hash_function:first_hash: hval = %ld, index = %d\n", hval, *index));
+        DB_TRACE(("DB:db_hash_function:first_hash: hval = %ld, index = %d\n", *hval, *index));
     }
     else
     {

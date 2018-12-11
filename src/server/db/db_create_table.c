@@ -24,7 +24,6 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
     int num_table = db->num_table + 1;
     int index_table = db->num_table;
     int now_id_table;
-    off_t fields_bucket_pos;
 
     // Reset db_error_no
     DB_RESET_ERROR();
@@ -64,30 +63,22 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
         DB_SET_ERROR(DB_SEEK_FD_FAIL);
         return DB_NULL;
     }
-    off_t rows_bucket_pos = pos_table + DB_POS_ROWS_BUCKET_IN_TABLE;
-    DB_TRACE(("DB:db_create_table:Set unused in rows bucket at %ld\n", rows_bucket_pos));
+    DB_TRACE(("DB:db_create_table:Set unused in rows bucket at %ld\n", pos_table + DB_POS_ROWS_BUCKET_IN_TABLE));
     for(i = 0; i < DB_MAX_ROWS_IN_BUCKET; i++)
     {
         db_flag_t flag = DB_FLAG_USED;
-        if(db_set_flag_in_rows_bucket(db->fd, rows_bucket_pos, i, flag) == DB_FAILURE)
+        if(db_set_flag_in_rows_bucket(db->fd, pos_table, i, flag) == DB_FAILURE)
         {
             return DB_NULL;
         }
     }
 
     // Set unused for fields bucket
-    fields_bucket_pos = pos_table + DB_POS_FIELDS_BUCKET_IN_TABLE;
-
-    if(db_seek(db->fd, fields_bucket_pos, DB_BEGIN_FD) == -1)
-    {
-        DB_SET_ERROR(DB_SEEK_FD_FAIL);
-        return DB_NULL;
-    }
     DB_TRACE(("DB:db_create_table:Set unused in fields bucket at %ld\n", pos_table + DB_POS_FIELDS_BUCKET_IN_TABLE));
-    for(i = 0; i < DB_MAX_FIELDS_IN_TABLE; i++)
+    for(i = 0; i <= DB_MAX_FIELDS_IN_TABLE; i++)
     {   
         db_flag_t flag = DB_FLAG_NOT_USED;
-        if(db_set_flag_in_fields_bucket(db->fd, fields_bucket_pos, i, flag) == DB_FAILURE)
+        if(db_set_flag_in_fields_bucket(db->fd, pos_table, i, flag) == DB_FAILURE)
         {
             return DB_NULL;
         }
@@ -239,7 +230,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
         db_index_t first_idx = hval % DB_MAX_FIELDS_IN_TABLE;
         DB_TRACE(("DB:db_create_table:first_idx = %d\n", first_idx));
 
-        if(db_is_field_in_fields_bucket_used(db->fd, fields_bucket_pos, first_idx) == DB_FALSE)
+        if(db_is_field_in_fields_bucket_used(db->fd, pos_table, first_idx) == DB_FALSE)
         {
             if(db_error_no != DB_NO_ERROR)
             {
@@ -256,7 +247,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
             {
                 second_index = db_second_hash(hval2, DB_MAX_FIELDS_IN_TABLE, second_index);
                 DB_TRACE(("DB:db_create_table:index in second hash = %d\n", second_index));
-                if(db_is_field_in_fields_bucket_used(db->fd, fields_bucket_pos, second_index) == DB_FALSE)
+                if(db_is_field_in_fields_bucket_used(db->fd, pos_table, second_index) == DB_FALSE)
                 {
                     if(db_error_no != DB_NO_ERROR)
                     {
@@ -277,7 +268,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
         /* Write in fields bucket */
         // Set field is used in fields bucket
         db_flag_t flag = DB_FLAG_USED;
-        if(db_set_flag_in_fields_bucket(db->fd, fields_bucket_pos, fields[index].index, flag) == DB_FAILURE)
+        if(db_set_flag_in_fields_bucket(db->fd, pos_table, fields[index].index, flag) == DB_FAILURE)
         {
             return DB_NULL;
         }

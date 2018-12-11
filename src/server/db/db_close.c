@@ -21,5 +21,6 @@ void db_close(DATABASE db)
     // Close file descriptor
     close(db->fd);
     // Mem in database info
+    DB_TRACE(("DB:db_close: Free db!\n"));
     db_free(db);
 }

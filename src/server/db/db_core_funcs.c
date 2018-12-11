@@ -910,7 +910,7 @@ off_t db_point_to_fields_bucket_by_value_index(int fd, off_t fields_pos, db_inde
     Caution: this function change position of fd. 
              So after call this function, seek to old position
 */
-db_boolean_t db_get_value_in_fields_bucket(int fd, off_t field_pos, db_index_t value_index, struct db_value * value)
+db_boolean_t db_get_value_in_fields_bucket(int fd, off_t field_pos, db_index_t value_index, db_value_field_t * value)
 {
     off_t pos = db_point_to_fields_bucket_by_value_index(fd, field_pos, value_index);
     if (pos == -1)
@@ -919,13 +919,18 @@ db_boolean_t db_get_value_in_fields_bucket(int fd, off_t field_pos, db_index_t v
     }
 
     ssize_t io_ret_val = db_read(fd, value, DB_UNIT_SIZE_IN_FIELDS_BUCKET);
-    DB_TRACE(("DB:db_get_value_in_fields_bucket: number read = %lu at %ld\n", io_ret_val,  pos));
+    
     if( io_ret_val == -1 )
     {
+        DB_TRACE(("DB:db_get_value_in_fields_bucket: io_ret_val = %lu at %ld\n", io_ret_val, pos));
         DB_SET_ERROR(DB_READ_WRONG);
         return DB_FAILURE;
     }
 
+    DB_TRACE(("DB:db_get_value_in_fields_bucket: get value.flag = %d at %ld\n", (int) value->flag, pos));
+    DB_TRACE(("DB:db_get_value_in_fields_bucket: get value.row_id = %d at %ld\n", value->row_id, pos));
+    DB_TRACE(("DB:db_get_value_in_fields_bucket: get value.size = %d at %ld\n", value->size, pos));
+    DB_TRACE(("DB:db_get_value_in_fields_bucket: get value.val = %s at %ld\n", value->value, pos));
     return DB_SUCCESS;
 }
 
@@ -949,13 +954,17 @@ db_boolean_t db_set_value_in_fields_bucket(int fd, off_t field_pos, db_index_t v
     }
     ssize_t io_ret_val = db_write ( fd, &value, DB_UNIT_SIZE_IN_FIELDS_BUCKET );
 
-    DB_TRACE(("DB:db_set_value_in_fields_bucket: number write = %lu at %ld\n", io_ret_val, pos));
+    
     if (io_ret_val == -1)
     {
+        DB_TRACE(("DB:db_set_value_in_fields_bucket: io_ret_val = %lu at %ld\n", io_ret_val, pos));
         DB_SET_ERROR(DB_WRITE_WRONG);
         return DB_FAILURE;
     }
-
+    DB_TRACE(("DB:db_set_value_in_fields_bucket: set value.flag = %d at %ld\n", (int) value.flag, pos));
+    DB_TRACE(("DB:db_set_value_in_fields_bucket: set value.row_id = %d at %ld\n", value.row_id, pos));
+    DB_TRACE(("DB:db_set_value_in_fields_bucket: set value.size = %d at %ld\n", value.size, pos));
+    DB_TRACE(("DB:db_set_value_in_fields_bucket: set value.val = %s at %ld\n", value.value, pos));
     return DB_SUCCESS;
 }
 
