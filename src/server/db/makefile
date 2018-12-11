@@ -1,7 +1,7 @@
 #makefile
 
 CC=gcc
-OBJECT_FILE=db_open.o db_close.o db_create_table.o db_global.o db_core_funcs.o db_hash_function.o db_remove_table.o
+OBJECT_FILE=db_open.o db_close.o db_create_table.o db_global.o db_core_funcs.o db_hash_function.o db_remove_table.o db_insert.o
 FLAG=-Wall -g
 BIN_NAME=database
 MACRO_AT_BUILD=-DDB_TRACE_ENABLE -DDB_ERROR_TRACE_ENABLE
@@ -22,6 +22,8 @@ db_hash_function.o: ${HEADER_FILE}
 	${CC} ${FLAG} -c db_hash_function.c -o $@ ${MACRO_AT_BUILD}
 db_remove_table.o: ${HEADER_FILE}
 	${CC} ${FLAG} -c db_remove_table.c -o $@ ${MACRO_AT_BUILD}
+db_insert.o: ${HEADER_FILE}
+	${CC} ${FLAG} -c db_insert.c -o $@ ${MACRO_AT_BUILD}
 
 .PHONY: clean
 

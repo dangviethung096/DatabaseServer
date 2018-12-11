@@ -119,7 +119,7 @@ struct db_first_field_data
 
 struct db_row_data
 {
-    off_t fields[DB_MAX_FIELDS_IN_TABLE];
+    off_t fields[DB_MAX_FIELDS_IN_TABLE + 1];
 };
 
 struct db_field_data
@@ -135,7 +135,7 @@ struct db_fields_bucket_data
 
 struct db_rows_bucket_data
 {
-    struct db_row_data rows[DB_MAX_ROWS_IN_BUCKET];
+    struct db_row_data rows[DB_MAX_ROWS_IN_BUCKET + 1];
 };
 
 struct db_table_info_data

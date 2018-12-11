@@ -98,8 +98,8 @@ static inline db_boolean_t db_read_table_info(DATABASE db)
             return DB_FAILURE;
         }
         /* Alloc memory for fields */
-        db->tables[i].fields = (db_field_t *)db_alloc(DB_MAX_FIELDS_IN_TABLE * DB_FIELD_INFO_SIZE);
-        for(j = 0; j < DB_MAX_FIELDS_IN_TABLE; j++)
+        db->tables[i].fields = (db_field_t *)db_alloc((DB_MAX_FIELDS_IN_TABLE + 1) * DB_FIELD_INFO_SIZE);
+        for(j = 0; j <= DB_MAX_FIELDS_IN_TABLE; j++)
         {
             db->tables[i].fields[j].index = -1;
         }
@@ -119,7 +119,7 @@ static inline db_boolean_t db_read_table_info(DATABASE db)
         // Count number row
         off_t table_pos = db->tables[i].position_table;
         db->tables[i].num_rows = 0;
-        for(j = 0; j < DB_MAX_ROWS_IN_BUCKET; j++)
+        for(j = 0; j < DB_MAX_ROWS_IN_BUCKET + 1; j++)
         {
             if(db_is_row_in_rows_bucket_used(db->fd, table_pos, j) == DB_TRUE)
             {

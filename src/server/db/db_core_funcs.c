@@ -161,7 +161,7 @@ db_boolean_t db_set_flag_in_fields_bucket(int fd, off_t table_pos, db_index_t in
         DB_SET_ERROR(DB_SEEK_FD_FAIL);
         return DB_FAILURE;
     }
-
+    DB_TRACE(("DB:db_set_flag_in_fields_bucket: write flag = %d at %ld!\n", (int) flag, pos));
     return DB_SUCCESS;
 }
 
@@ -350,7 +350,7 @@ off_t db_point_to_table_info_in_db_by_index(int fd, int index)
     DB_TRACE(("DB:db_point_to_table_info_in_db_by_index: seek to %ld\n", pos));
     if(db_seek(fd, pos, DB_BEGIN_FD) == -1)
     {
-        DB_TRACE(("DB:db_point_to_fields_bucket_by_index: seek_fail!\n"));
+        DB_TRACE(("DB:db_point_to_table_info_in_db_by_index: seek_fail!\n"));
         DB_SET_ERROR(DB_SEEK_FD_FAIL);
         return -1;
     }
@@ -805,21 +805,28 @@ db_boolean_t db_set_index_field_info_in_table(int fd, off_t table_pos, int index
     Caution: this function change position of fd. 
              So after call this function, seek to old position
  */
-int db_get_index_field_in_fields_bucket_by_field_name(int fd, db_table_info *table, char *field_name)
+int db_get_index_field_in_fields_bucket_by_field_name(int fd, db_table_info *table, U8bit *field_name)
 {
     db_first_hash_ret_t hval = 0;
     int num_hash = 0;
     int index = 0;
     off_t fields_bucket_pos = table->position_table + DB_POS_FIELDS_BUCKET_IN_TABLE;
     db_hash_function(field_name, &hval, DB_MAX_FIELDS_IN_TABLE, &num_hash, &index);
+    int first_index = index;
 
-    while (db_strncmp(table->fields[index].field_name, field_name, db_length_str(field_name)) == 0 && db_is_field_in_fields_bucket_used(fd, fields_bucket_pos, index) == DB_TRUE)
+    do
     {
+        if (db_strncmp(table->fields[index].field_name, field_name, db_length_str(field_name)) == 0 
+            && db_is_field_in_fields_bucket_used(fd, fields_bucket_pos, index) == DB_TRUE)
+        {
+            return index;
+        }
+
         DB_TRACE(("DB:db_get_index_field_in_fields_bucket_by_field_name:index = %d\n", index));
         db_hash_function(field_name, &hval, DB_MAX_FIELDS_IN_TABLE, &num_hash, &index);
-    }
+    }while(first_index != index);
 
-    return index;
+    return -1;
 }
 
 /* 
@@ -833,7 +840,7 @@ int db_get_index_field_in_fields_bucket_by_field_name(int fd, db_table_info *tab
     Caution: this function change position of fd. 
              So after call this function, seek to old position
  */
-off_t db_point_to_fields_bucket_by_field_name(int fd, db_table_info * table, char * field_name)
+off_t db_point_to_fields_bucket_by_field_name(int fd, db_table_info *table, U8bit *field_name)
 {
     off_t pos;
     
@@ -860,7 +867,7 @@ off_t db_point_to_fields_bucket_by_field_name(int fd, db_table_info * table, cha
     Caution: this function change position of fd. 
              So after call this function, seek to old position
  */
-int db_get_index_table_from_table_name(DATABASE db, char * table_name)
+int db_get_index_table_from_table_name(DATABASE db, U8bit *table_name)
 {
     int i;
     for(i = 0; i < db->num_table; i++)
@@ -996,3 +1003,38 @@ db_boolean_t db_is_value_in_field_bucket_used(int fd, off_t field_pos, db_index_
     return DB_FALSE;
 }
 
+/* 
+    Function: db_get_empty_index_field_in_fields_bucket_by_field_name
+    Params: fd,
+            table,
+            field_name
+    Description: point to index field info in table
+    Return value: -1 if error
+                  position of number table if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+int db_get_empty_index_field_in_fields_bucket_by_field_name(int fd, off_t table_pos, U8bit *field_name)
+{
+    db_first_hash_ret_t hval = 0;
+    int num_hash = 0;
+    int index = 0;
+    off_t fields_bucket_pos = table_pos + DB_POS_FIELDS_BUCKET_IN_TABLE;
+    db_hash_function(field_name, &hval, DB_MAX_FIELDS_IN_TABLE, &num_hash, &index);
+    int first_index = index;
+    do
+    {
+        DB_TRACE(("DB:db_get_empty_index_field_in_fields_bucket_by_field_name:index = %d\n", index));
+        if (db_is_field_in_fields_bucket_used(fd, fields_bucket_pos, index) == DB_FALSE)
+        {
+            // Have an errro
+            if(db_error_no != DB_NO_ERROR)
+                break;
+            // Return success
+            return index;
+        }
+        db_hash_function(field_name, &hval, DB_MAX_FIELDS_IN_TABLE, &num_hash, &index);
+    }while(first_index != index);
+    
+    return -1;
+}

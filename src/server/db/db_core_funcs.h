@@ -51,15 +51,16 @@ db_boolean_t db_get_database_name(int fd, char *database_name);
 db_field_t db_get_index_field_info_in_table(int fd, off_t table_pos, int index);
 db_boolean_t db_set_index_field_info_in_table(int fd, off_t table_pos, int index, db_field_t field);
 
-int db_get_index_field_in_fields_bucket_by_field_name(int fd, db_table_info *table, char *field_name);
-off_t db_point_to_fields_bucket_by_field_name(int fd, db_table_info *table, char *field_name);
-int db_get_index_table_from_table_name(DATABASE db, char *table_name);
+int db_get_index_field_in_fields_bucket_by_field_name(int fd, db_table_info *table, U8bit * field_name);
+off_t db_point_to_fields_bucket_by_field_name(int fd, db_table_info *table, U8bit * field_name);
+int db_get_index_table_from_table_name(DATABASE db, U8bit * table_name);
 
 off_t db_point_to_fields_bucket_by_value_index(int fd, off_t fields_pos, db_index_t value_index);
 db_boolean_t db_get_value_in_fields_bucket(int fd, off_t field_pos, db_index_t value_index, struct db_value *value);
 db_boolean_t db_is_value_in_field_bucket_used(int fd, off_t field_pos, db_index_t value_index);
 db_boolean_t db_set_value_in_fields_bucket(int fd, off_t field_pos, db_index_t value_index, struct db_value value);
 
+int db_get_empty_index_field_in_fields_bucket_by_field_name(int fd, off_t table_pos, U8bit *field_name);
 /* START: function with string */
 #define db_strncmp(str1, str2, num)                         \
             strncmp((const char *) str1,(const char *) str2,(size_t) num)

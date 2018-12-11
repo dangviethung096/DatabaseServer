@@ -58,13 +58,8 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
     }
 
     // Set unused for rows bucket
-    if(db_seek(db->fd, pos_table + DB_POS_ROWS_BUCKET_IN_TABLE, DB_BEGIN_FD) == -1)
-    {
-        DB_SET_ERROR(DB_SEEK_FD_FAIL);
-        return DB_NULL;
-    }
     DB_TRACE(("DB:db_create_table:Set unused in rows bucket at %ld\n", pos_table + DB_POS_ROWS_BUCKET_IN_TABLE));
-    for(i = 0; i < DB_MAX_ROWS_IN_BUCKET; i++)
+    for(i = 0; i <= DB_MAX_ROWS_IN_BUCKET; i++)
     {
         db_flag_t flag = DB_FLAG_USED;
         if(db_set_flag_in_rows_bucket(db->fd, pos_table, i, flag) == DB_FAILURE)
@@ -222,44 +217,9 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
         }
 
         /* Hashing to find index fd */
-        db_key_t key;
-        key.val = (U8bit *) fields[index].field_name;
-        key.size = db_strlen(key.val);
-        DB_TRACE(("DB:db_create_table:hashing index with key.val = %s, key.size = %d\n", key.val, key.size));
-        db_first_hash_ret_t hval = db_first_hash(key);
-        db_index_t first_idx = hval % DB_MAX_FIELDS_IN_TABLE;
-        DB_TRACE(("DB:db_create_table:first_idx = %d\n", first_idx));
 
-        if(db_is_field_in_fields_bucket_used(db->fd, pos_table, first_idx) == DB_FALSE)
-        {
-            if(db_error_no != DB_NO_ERROR)
-            {
-                return DB_NULL;
-            }
-            // Add new field to here
-            fields[index].index = first_idx;
-
-        }else
-        {
-            int hval2 = 1 + hval % (DB_MAX_FIELDS_IN_TABLE - 2);
-            db_second_hash_ret_t second_index = first_idx;
-            do
-            {
-                second_index = db_second_hash(hval2, DB_MAX_FIELDS_IN_TABLE, second_index);
-                DB_TRACE(("DB:db_create_table:index in second hash = %d\n", second_index));
-                if(db_is_field_in_fields_bucket_used(db->fd, pos_table, second_index) == DB_FALSE)
-                {
-                    if(db_error_no != DB_NO_ERROR)
-                    {
-                        return DB_NULL;
-                    }
-                    // Add new field to here
-                    fields[index].index = second_index;
-                    break;
-                }
-            }while(second_index != first_idx);
-        }
-
+        fields[index].index = db_get_empty_index_field_in_fields_bucket_by_field_name(db->fd, pos_table,(U8bit *) fields[index].field_name);
+        DB_TRACE(("DB:db_create_table: pos_table = %ld\n", pos_table));
         if(db_set_index_field_info_in_table(db->fd, pos_table, index, fields[index]) == DB_FAILURE)
         {
             return DB_NULL;

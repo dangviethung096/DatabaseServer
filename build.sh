@@ -88,6 +88,16 @@ BUILD_T_DB_REMOVE_TABLE()
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_remove_table.o -o ${BIN_PATH}/t_db_remove_table.out
 }
 
+BUILD_T_DB_INSERT()
+{
+	printf "\n\n=============================================================================\n"
+	echo "${CC} -c ${TEST_PATH}/t_db_insert.c -o ${OBJECT_PATH}/t_db_insert.o"
+	${CC} -c ${TEST_PATH}/t_db_insert.c -o ${OBJECT_PATH}/t_db_insert.o
+	printf "\n\n=============================================================================\n"
+	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_insert.o -o ${BIN_PATH}/t_db_insert.out"
+	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_insert.o -o ${BIN_PATH}/t_db_insert.out
+}
+
 BUILD_TEST()
 {
 	printf "\nBUILD_DB"
@@ -102,6 +112,8 @@ BUILD_TEST()
 	BUILD_T_DB_CREATE_DB
 	printf "\nBUILD_T_DB_REMOVE_TABLE"
 	BUILD_T_DB_REMOVE_TABLE
+	printf "\nBUILD_T_DB_INSERT"
+	BUILD_T_DB_INSERT
 }
 #####################################################
 #SECTION 3: RULES
