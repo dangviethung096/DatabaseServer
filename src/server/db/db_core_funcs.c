@@ -959,9 +959,9 @@ db_boolean_t db_set_value_in_fields_bucket(int fd, off_t field_pos, db_index_t v
     {
         return DB_FAILURE;
     }
+
     ssize_t io_ret_val = db_write ( fd, &value, DB_UNIT_SIZE_IN_FIELDS_BUCKET );
 
-    
     if (io_ret_val == -1)
     {
         DB_TRACE(("DB:db_set_value_in_fields_bucket: io_ret_val = %lu at %ld\n", io_ret_val, pos));

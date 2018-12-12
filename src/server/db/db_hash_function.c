@@ -75,7 +75,7 @@ void db_hash_function(U8bit * value, db_first_hash_ret_t *hval, int table_size, 
         key.size = db_strlen(value);
         *hval = db_first_hash(key);
         *index = (*hval) % table_size + 1;
-        num_hash++;
+        (*num_hash)++;
         DB_TRACE(("DB:db_hash_function:first_hash: hval = %ld, index = %d\n", *hval, *index));
     }
     else

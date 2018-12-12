@@ -44,7 +44,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
         return DB_NULL;
     }
 
-    int i;
+    int i, j;
     char val = 0x00;
     DB_TRACE(("DB:db_create_table:DB_SINGLE_TABLE_SIZE = %lu, DB_TABLE_INFO_DATA_SIZE = %lu\n", DB_SINGLE_TABLE_SIZE, DB_TABLE_INFO_DATA_SIZE));
     for(i = 0; i < DB_TABLE_INFO_DATA_SIZE; i++)
@@ -76,6 +76,21 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
         if(db_set_flag_in_fields_bucket(db->fd, pos_table, i, flag) == DB_FAILURE)
         {
             return DB_NULL;
+        }
+        
+        for(j = 0; j <= DB_MAX_ROWS_IN_BUCKET; j++)
+        {
+            db_value_field_t value;
+            value.flag = DB_FLAG_NOT_USED;
+            value.row_id = -1;
+            value.size = 0;
+            memcpy(value.value, "NULL", db_length_str("NULL"));
+
+            off_t field_pos = pos_table + DB_POS_FIELDS_BUCKET_IN_TABLE + i * DB_FIELD_SIZE_IN_FIELD_BUCKET;
+            if(db_set_value_in_fields_bucket(db->fd, field_pos, j, value) == DB_FAILURE)
+            {
+                return DB_NULL;
+            }
         }
     }
 
