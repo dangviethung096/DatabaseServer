@@ -17,10 +17,13 @@
 db_boolean_t db_insert(DATABASE db, U8bit * table_name, U8bit * field_name, U8bit * value)
 {
     DB_RESET_ERROR();
+    // Declare value
+    int row_id;
+    db_table_info * table;
     //Search table_id
     int table_index = db_get_index_table_from_table_name(db, table_name);
-    db_table_info * table = &(db->tables[table_index]);
-    
+    table = &(db->tables[table_index]);
+    row_id = table->num_rows;
     //Search position of field_name
     int field_index = db_get_index_field_in_fields_bucket_by_field_name(db->fd, table, field_name);
     if(field_index < 1 && field_index > DB_MAX_FIELDS_IN_TABLE)
@@ -64,7 +67,7 @@ db_boolean_t db_insert(DATABASE db, U8bit * table_name, U8bit * field_name, U8bi
     value_in_field.size = db_length_str(value);
     value_in_field.row_id = db->tables[table_index].num_rows;
     
-    db->tables[table_index].num_rows++;
+    
     memcpy(value_in_field.value, value, value_in_field.size);
     DB_TRACE(("DB:db_insert:insert data: flag = %d, size = %d, row_id = %d, value = %s!\n", 
                                         (int)value_in_field.flag, value_in_field.size, value_in_field.row_id, value_in_field.value));
@@ -72,6 +75,13 @@ db_boolean_t db_insert(DATABASE db, U8bit * table_name, U8bit * field_name, U8bi
     {
         return DB_FAILURE;
     }
+    // Insert to row
+    db_flag_t flag = DB_FLAG_USED;
+    if(db_set_flag_in_rows_bucket(db->fd, table->position_table, row_id, flag) == DB_FAILURE)
+    {
+        return DB_FAILURE;
+    }
 
+    db->tables[table_index].num_rows++;
     return DB_SUCCESS;
 }

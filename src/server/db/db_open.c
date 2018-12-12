@@ -123,7 +123,7 @@ static inline db_boolean_t db_read_table_info(DATABASE db)
         {
             if(db_is_row_in_rows_bucket_used(db->fd, table_pos, j) == DB_TRUE)
             {
-                db->tables[i].num_rows++;
+                (db->tables[i].num_rows)++;
             }
         }
         DB_TRACE(("DB:db_read_table_info: number rows = %d\n", db->tables[i].num_rows));

@@ -305,7 +305,7 @@ db_boolean_t db_set_flag_in_rows_bucket(int fd, off_t table_pos, db_index_t inde
     {
         DB_TRACE(("DB:db_set_flag_in_rows_bucket: write wrong!\n"));
     }
-
+    DB_TRACE(("DB:db_set_flag_in_rows_bucket: write flag = %d at %ld\n", flag, pos));
     return DB_SUCCESS;
 }
 
@@ -324,11 +324,17 @@ db_boolean_t db_set_flag_in_rows_bucket(int fd, off_t table_pos, db_index_t inde
 db_boolean_t db_is_row_in_rows_bucket_used(int fd, off_t table_pos, db_index_t index)
 {
     db_flag_t flag;
-    flag = db_get_flag_in_rows_bucket(fd, table_pos, index, &flag);
+    if(db_get_flag_in_rows_bucket(fd, table_pos, index, &flag) == DB_FAILURE)
+    {
+        DB_TRACE(("DB:db_is_row_in_rows_bucket_used: get flag false!\n"));
+        return DB_FALSE;
+    }
     if((flag & DB_FLAG_USED) == DB_FLAG_USED)
     {
+        DB_TRACE(("DB:db_is_row_in_rows_bucket_used: True!\n"));
         return DB_TRUE;
     }
+    DB_TRACE(("DB:db_is_row_in_rows_bucket_used: False!\n"));
     return DB_FALSE;
 }
 
@@ -1036,5 +1042,40 @@ int db_get_empty_index_field_in_fields_bucket_by_field_name(int fd, off_t table_
         db_hash_function(field_name, &hval, DB_MAX_FIELDS_IN_TABLE, &num_hash, &index);
     }while(first_index != index);
     
+    return -1;
+}
+
+/* 
+    Function: db_set_field_to_rows_bucket_by_field_name
+    Params: fd,
+            table,
+            field_name
+    Description: point to index field info in table
+    Return value: -1 if error
+                  position of number table if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+int db_set_field_to_rows_bucket_by_field_name(int fd, off_t table_pos, U8bit *field_name)
+{
+    db_first_hash_ret_t hval = 0;
+    int num_hash = 0;
+    int index = 0;
+    db_hash_function(field_name, &hval, DB_MAX_FIELDS_IN_TABLE, &num_hash, &index);
+    int first_index = index;
+    do
+    {
+        DB_TRACE(("DB:db_get_empty_index_field_in_fields_bucket_by_field_name:index = %d\n", index));
+        if (db_is_field_in_fields_bucket_used(fd, table_pos, index) == DB_FALSE)
+        {
+            // Have an errro
+            if (db_error_no != DB_NO_ERROR)
+                break;
+            // Return success
+            return index;
+        }
+        db_hash_function(field_name, &hval, DB_MAX_FIELDS_IN_TABLE, &num_hash, &index);
+    } while (first_index != index);
+
     return -1;
 }
