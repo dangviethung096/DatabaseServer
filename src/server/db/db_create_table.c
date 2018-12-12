@@ -61,7 +61,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
     DB_TRACE(("DB:db_create_table:Set unused in rows bucket at %ld\n", pos_table + DB_POS_ROWS_BUCKET_IN_TABLE));
     for(i = 0; i <= DB_MAX_ROWS_IN_BUCKET; i++)
     {
-        db_flag_t flag = DB_FLAG_USED;
+        db_flag_t flag = DB_FLAG_NOT_USED;
         if(db_set_flag_in_rows_bucket(db->fd, pos_table, i, flag) == DB_FAILURE)
         {
             return DB_NULL;
