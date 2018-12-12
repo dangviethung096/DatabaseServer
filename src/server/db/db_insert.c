@@ -23,6 +23,10 @@ db_boolean_t db_insert(DATABASE db, U8bit * table_name, U8bit * field_name, U8bi
     
     //Search position of field_name
     int field_index = db_get_index_field_in_fields_bucket_by_field_name(db->fd, table, field_name);
+    if(field_index < 1 && field_index > DB_MAX_FIELDS_IN_TABLE)
+    {
+        return DB_FAILURE;
+    }
     DB_TRACE(("DB:db_insert: get field_index = %d!\n", field_index));
     off_t field_pos = db_point_to_fields_bucket_by_index(db->fd, table->position_table, field_index);
     DB_TRACE(("DB:db_insert: get field_pos = %ld!\n", field_pos));
@@ -33,6 +37,10 @@ db_boolean_t db_insert(DATABASE db, U8bit * table_name, U8bit * field_name, U8bi
     
     if(db_is_value_in_field_bucket_used(db->fd, field_pos, value_index) == DB_TRUE)
     {
+        if(db_error_no != DB_NO_ERROR)
+        {
+            return DB_FAILURE;
+        }
         int first_index = value_index;
         do
         {
@@ -55,8 +63,11 @@ db_boolean_t db_insert(DATABASE db, U8bit * table_name, U8bit * field_name, U8bi
     value_in_field.flag = DB_FLAG_USED;
     value_in_field.size = db_length_str(value);
     value_in_field.row_id = db->tables[table_index].num_rows;
+    
     db->tables[table_index].num_rows++;
     memcpy(value_in_field.value, value, value_in_field.size);
+    DB_TRACE(("DB:db_insert:insert data: flag = %d, size = %d, row_id = %d, value = %s!\n", 
+                                        (int)value_in_field.flag, value_in_field.size, value_in_field.row_id, value_in_field.value));
     if(db_set_value_in_fields_bucket(db->fd, field_pos, value_index, value_in_field) == DB_FAILURE)
     {
         return DB_FAILURE;

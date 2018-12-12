@@ -96,7 +96,7 @@ off_t db_point_to_fields_bucket_by_index(int fd, off_t table_pos, db_index_t ind
 db_boolean_t db_get_flag_in_fields_bucket(int fd, off_t table_pos, db_index_t index, db_flag_t * flag)
 {
     off_t pos = db_point_to_fields_bucket_by_index(fd, table_pos, index);
-    if(db_point_to_fields_bucket_by_index(fd, table_pos, index) == -1)
+    if(pos == -1)
     {
         return DB_FAILURE;
     }
@@ -185,7 +185,7 @@ db_boolean_t db_is_field_in_fields_bucket_used(int fd, off_t table_pos, db_index
         return DB_FALSE;
     }
 
-    if((flag & DB_FLAG_NOT_USED))
+    if( (flag & DB_FLAG_USED) == DB_FLAG_USED )
     {
         return DB_TRUE;
     }
@@ -325,7 +325,7 @@ db_boolean_t db_is_row_in_rows_bucket_used(int fd, off_t table_pos, db_index_t i
 {
     db_flag_t flag;
     flag = db_get_flag_in_rows_bucket(fd, table_pos, index, &flag);
-    if((flag & DB_FLAG_NOT_USED))
+    if((flag & DB_FLAG_USED) == DB_FLAG_USED)
     {
         return DB_TRUE;
     }
@@ -810,19 +810,19 @@ int db_get_index_field_in_fields_bucket_by_field_name(int fd, db_table_info *tab
     db_first_hash_ret_t hval = 0;
     int num_hash = 0;
     int index = 0;
-    off_t fields_bucket_pos = table->position_table + DB_POS_FIELDS_BUCKET_IN_TABLE;
     db_hash_function(field_name, &hval, DB_MAX_FIELDS_IN_TABLE, &num_hash, &index);
     int first_index = index;
 
     do
     {
+        DB_TRACE(("DB:db_get_index_field_in_fields_bucket_by_field_name:index = %d\n", index));
+        // DB_TRACE(("DB:db_get_index_field_in_fields_bucket_by_field_name:field_name = %s\n", field_name));
+        // DB_TRACE(("DB:db_get_index_field_in_fields_bucket_by_field_name:table_field_name = %s\n", table->fields[index].field_name));
         if (db_strncmp(table->fields[index].field_name, field_name, db_length_str(field_name)) == 0 
-            && db_is_field_in_fields_bucket_used(fd, fields_bucket_pos, index) == DB_TRUE)
+            && db_is_field_in_fields_bucket_used(fd, table->position_table, index) == DB_TRUE)
         {
             return index;
         }
-
-        DB_TRACE(("DB:db_get_index_field_in_fields_bucket_by_field_name:index = %d\n", index));
         db_hash_function(field_name, &hval, DB_MAX_FIELDS_IN_TABLE, &num_hash, &index);
     }while(first_index != index);
 
@@ -989,6 +989,7 @@ db_boolean_t db_set_value_in_fields_bucket(int fd, off_t field_pos, db_index_t v
 db_boolean_t db_is_value_in_field_bucket_used(int fd, off_t field_pos, db_index_t value_index)
 {
     // Get value pos
+    DB_TRACE(("DB:db_is_value_in_field_bucket_used: field_pos = %ld, value_index = %d\n", field_pos, value_index));
     db_value_field_t value;
     if(db_get_value_in_fields_bucket(fd, field_pos, value_index, &value) == DB_FAILURE)
     {
@@ -1019,13 +1020,12 @@ int db_get_empty_index_field_in_fields_bucket_by_field_name(int fd, off_t table_
     db_first_hash_ret_t hval = 0;
     int num_hash = 0;
     int index = 0;
-    off_t fields_bucket_pos = table_pos + DB_POS_FIELDS_BUCKET_IN_TABLE;
     db_hash_function(field_name, &hval, DB_MAX_FIELDS_IN_TABLE, &num_hash, &index);
     int first_index = index;
     do
     {
         DB_TRACE(("DB:db_get_empty_index_field_in_fields_bucket_by_field_name:index = %d\n", index));
-        if (db_is_field_in_fields_bucket_used(fd, fields_bucket_pos, index) == DB_FALSE)
+        if (db_is_field_in_fields_bucket_used(fd, table_pos, index) == DB_FALSE)
         {
             // Have an errro
             if(db_error_no != DB_NO_ERROR)
