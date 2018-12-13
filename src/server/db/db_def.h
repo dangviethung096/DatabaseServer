@@ -32,7 +32,7 @@
 #define DB_MAX_ROWS_IN_BUCKET          7         // It must be a prime number because algorithm hashing
 #define DB_MAX_FIELDS_IN_TABLE         3         // It must be a prime number because algorithm hashing
 #define DB_MAX_INDEX_FIELDS            4
-#define DB_MAX_SIZE_IN_VALUE           32
+#define DB_MAX_SIZE_IN_VALUE           sizeof(struct db_value)
 
 #define DB_MAX_LENGTH_DB_NAME          32
 #define DB_MAX_LENGTH_TABLE_NAME       32
@@ -107,6 +107,7 @@
 #define DB_POS_NAME_TABLE                DB_POS_ID_TABLE + DB_INT_SIZE
 #define DB_POS_NUM_FIELD_IN_TABLE        DB_POS_NAME_TABLE   +   DB_MAX_LENGTH_TABLE_NAME
 #define DB_POS_FIELDS_IN_TABLE           DB_POS_NUM_FIELD_IN_TABLE + DB_U_8_BIT_SIZE
+#define DB_POS_NUM_ROW_IN_TABLE          DB_POS_FIELDS_IN_TABLE + (DB_FIELD_INFO_SIZE * DB_MAX_FIELDS_IN_TABLE)
 
 #define DB_POS_TABLE_INFO_IN_TABLE      0
 #define DB_POS_ROWS_BUCKET_IN_TABLE     DB_POS_TABLE_INFO_IN_TABLE + DB_TABLE_INFO_DATA_SIZE

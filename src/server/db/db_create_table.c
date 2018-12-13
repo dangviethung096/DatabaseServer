@@ -46,7 +46,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
 
     int i, j;
     char val = 0x00;
-    DB_TRACE(("DB:db_create_table:DB_SINGLE_TABLE_SIZE = %lu, DB_TABLE_INFO_DATA_SIZE = %lu\n", DB_SINGLE_TABLE_SIZE, DB_TABLE_INFO_DATA_SIZE));
+    DB_TRACE(("DB:db_create_table:set Unused table info at %ld\n", pos_table));
     for(i = 0; i < DB_TABLE_INFO_DATA_SIZE; i++)
     {
         io_ret_val = db_write(db->fd, &val, 1);
@@ -210,11 +210,8 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
         return DB_NULL;
     }
 
-    // Write fields in table
-    
-
-    off_t pos_first_field_in_table = pos_table + DB_POS_FIELDS_IN_TABLE;
-    DB_TRACE(("DB:db_create_table:pos_first_field_in_table = %ld\n", pos_first_field_in_table));
+    /* Write fields in table */
+    DB_TRACE(("\nDB:db_create_table: write %d fields\n", num_field));
     // Write each field in table to database
     int index;
     for(index = 0; index < num_field; index++)
@@ -250,24 +247,19 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
         }
     }
     
-    
+    /* Write num_row, because table is just created, num_row = 0 */
+    int num_row = 0;
+    DB_TRACE(("DB:db_create_table: set num_row = %d\n", num_row));
+    if(db_set_num_row_in_table(db->fd, pos_table, num_row) == DB_FAILURE)
+    {
+        return DB_NULL;
+    }
 
     
     /* Write number table info to database info */
-    off_t pos;
-    pos = DB_POS_NUMBER_TABLE;
-    if(db_seek(db->fd, pos, DB_BEGIN_FD) == -1)
+    DB_TRACE(("DB:db_set_num_table: set num_table = %d\n", num_table));
+    if(db_set_num_table(db->fd, num_table) == DB_FAILURE)
     {
-        DB_SET_ERROR(DB_SEEK_FD_FAIL);
-        return DB_NULL;
-    }
-    
-    // Increase number table index
-    DB_TRACE(("DB:db_create_table:write number table: %d\n", num_table));
-    io_ret_val = db_write(db->fd, &num_table, DB_INT_SIZE);
-    if(io_ret_val != DB_INT_SIZE)
-    {
-        DB_SET_ERROR(DB_WRITE_WRONG);
         return DB_NULL;
     }
 

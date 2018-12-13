@@ -56,7 +56,7 @@ off_t db_point_to_fields_bucket_by_field_name(int fd, db_table_info *table, U8bi
 int db_get_index_table_from_table_name(DATABASE db, U8bit * table_name);
 
 off_t db_point_to_fields_bucket_by_value_index(int fd, off_t fields_pos, db_index_t value_index);
-db_boolean_t db_get_value_in_fields_bucket(int fd, off_t field_pos, db_index_t value_index, struct db_value *value);
+db_boolean_t db_get_value_in_fields_bucket(int fd, off_t field_pos, db_index_t value_index, db_value_field_t *value);
 db_boolean_t db_is_value_in_field_bucket_used(int fd, off_t field_pos, db_index_t value_index);
 db_boolean_t db_set_value_in_fields_bucket(int fd, off_t field_pos, db_index_t value_index, struct db_value value);
 
@@ -65,6 +65,8 @@ int db_get_empty_index_field_in_fields_bucket_by_field_name(int fd, off_t table_
 off_t db_get_value_pos_from_rows_bucket_by_field_index(int fd, off_t table_pos, db_index_t row_index, db_index_t field_index);
 db_boolean_t db_set_value_pos_in_rows_bucket_by_field_index(int fd, off_t table_pos, db_index_t row_index, db_index_t field_index, off_t val_pos);
 
+U32bit db_get_num_row_in_table(int fd, off_t table_pos);
+db_boolean_t db_set_num_row_in_table(int fd, off_t table_pos, U32bit num_row);
 
 /* START: function with string */
 #define db_strncmp(str1, str2, num)                         \

@@ -539,6 +539,7 @@ unsigned int db_get_num_table(int fd)
     {
         return -1;
     }
+    /* Get num table */
     ssize_t io_ret_val;
     unsigned int num_table;
     io_ret_val = db_read(fd, &num_table, DB_INT_SIZE);
@@ -569,6 +570,7 @@ db_boolean_t db_set_num_table(int fd, unsigned int num_table)
     {
         return DB_FAILURE;
     }
+    /* Set num_table */
     ssize_t io_ret_val;
     DB_TRACE(("DB:db_set_num_table:write number table = %d at %ld\n", num_table, pos));
     io_ret_val = db_write(fd, &num_table, DB_INT_SIZE);
@@ -978,6 +980,7 @@ db_boolean_t db_set_value_in_fields_bucket(int fd, off_t field_pos, db_index_t v
         DB_SET_ERROR(DB_WRITE_WRONG);
         return DB_FAILURE;
     }
+
     DB_TRACE(("DB:db_set_value_in_fields_bucket: set value.flag = %d at %ld\n", (int) value.flag, pos));
     DB_TRACE(("DB:db_set_value_in_fields_bucket: set value.row_id = %d at %ld\n", value.row_id, pos));
     DB_TRACE(("DB:db_set_value_in_fields_bucket: set value.size = %d at %ld\n", value.size, pos));
@@ -1107,5 +1110,84 @@ db_boolean_t db_set_value_pos_in_rows_bucket_by_field_index(int fd, off_t table_
     }
 
     DB_TRACE(("DB:db_set_value_pos_in_rows_bucket_by_field_index: write val_pos = %ld at %ld\n", val_pos, pos));
+    return DB_SUCCESS;
+}
+
+/* 
+    Function: point_to_num_row_in_table_info
+    Params: 
+    Description: 
+    Return value: -1 if error
+                  pos if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+
+static off_t point_to_num_row_in_table_info(int fd, off_t table_pos)
+{
+    off_t pos = table_pos + DB_POS_TABLE_INFO_IN_TABLE + DB_POS_NUM_ROW_IN_TABLE;
+    if(db_seek(fd, pos, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return -1;
+    }
+    DB_TRACE(("DB:point_to_num_row_in_table_info: num_row at %ld\n", pos));
+    return pos;
+}
+
+/* 
+    Function: db_get_num_row_in_table
+    Params: 
+    Description: 
+    Return value: -1 if error
+                  num_row if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+U32bit db_get_num_row_in_table(int fd, off_t table_pos)
+{
+    off_t pos = point_to_num_row_in_table_info(fd, table_pos);
+    if(pos == -1)
+    {
+        return -1;
+    }
+    // Read num row
+    int num_row;
+    ssize_t io_ret_val = db_read(fd, &num_row, DB_U_32_BIT_SIZE);
+    if(io_ret_val == -1)
+    {
+        DB_SET_ERROR(DB_READ_WRONG);
+        return -1;
+    }
+    DB_TRACE(("DB:db_get_num_row_in_table: num_row = %u at %ld\n", num_row, pos));
+    return num_row;
+
+}
+
+/* 
+    Function: db_set_num_row_in_table
+    Params: 
+    Description: 
+    Return value: DB_FAILURE if error
+                  DB_SUCCESS if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+db_boolean_t db_set_num_row_in_table(int fd, off_t table_pos, U32bit num_row)
+{
+    off_t pos = point_to_num_row_in_table_info(fd, table_pos);
+    if (pos == -1)
+    {
+        return DB_FAILURE;
+    }
+    // Write num row
+    ssize_t io_ret_val = db_write(fd, &num_row, DB_U_32_BIT_SIZE);
+    if (io_ret_val == -1)
+    {
+        DB_SET_ERROR(DB_WRITE_WRONG);
+        return DB_FAILURE;
+    }
+
+    DB_TRACE(("DB:db_set_num_row_in_table: write num_row = %u at %ld\n", num_row, pos));
     return DB_SUCCESS;
 }

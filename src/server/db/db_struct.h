@@ -34,8 +34,9 @@ struct db_value
     // struct store data
     U8bit       size;
     U8bit       flag;
+    U16bit      reseve;
     U32bit      row_id;
-    U8bit       value[26];                 //Using 26 bytes store data
+    U8bit       value[28];                 //Using 28 bytes store data
 };
 
 typedef struct db_value db_value_field_t;
@@ -168,6 +169,7 @@ struct db_table_info_data
     U8bit table_name[DB_MAX_LENGTH_TABLE_NAME];
     U8bit num_field;
     db_field_t fields[DB_MAX_FIELDS_IN_TABLE];
+    U32bit  num_rows;
 };
 
 struct db_table_data

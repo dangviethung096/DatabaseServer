@@ -118,13 +118,10 @@ static inline db_boolean_t db_read_table_info(DATABASE db)
 
         // Count number row
         off_t table_pos = db->tables[i].position_table;
-        db->tables[i].num_rows = 0;
-        for(j = 0; j < DB_MAX_ROWS_IN_BUCKET + 1; j++)
+        db->tables[i].num_rows = db_get_num_row_in_table(db->fd, table_pos);
+        if(db->tables[i].num_rows == -1)
         {
-            if(db_is_row_in_rows_bucket_used(db->fd, table_pos, j) == DB_TRUE)
-            {
-                (db->tables[i].num_rows)++;
-            }
+            return DB_FAILURE;
         }
         DB_TRACE(("DB:db_read_table_info: number rows = %d\n", db->tables[i].num_rows));
     }

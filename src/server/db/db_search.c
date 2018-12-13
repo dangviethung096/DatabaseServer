@@ -20,18 +20,27 @@
     Caution: this function change position of fd. 
              So after call this function, seek to old position
  */
-db_boolean_t db_search(DATABASE db, U8bit * table_name, U8bit * field_name[], int num_field, db_condition_t cond, db_search_ret_t ret)
+db_boolean_t db_search(DATABASE db, U8bit * table_name, U8bit * field_name[], int num_field, db_condition_t * cond, db_search_ret_t * ret)
 {
     int table_index = db_get_index_table_from_table_name(db, table_name);
     int field_index;
+    int count_value = 0;
     db_table_info * table = &(db->tables[table_index]);
-    //Search field_name
-    int i;
+    /* Search field_name */
+    int i, j;
     
-    for(i = 0; i < num_field; i++)
+    /* Search all value */
+    ret = (db_search_ret_t *) malloc(table->num_rows);
+    for(i = 0; i < table->num_rows; i++)
     {
-        field_index = db_get_index_field_in_fields_bucket_by_field_name(db->fd, table, field_name[i]);
+        if(db_is_row_in_rows_bucket_used(db->fd, table->position_table, i) == DB_TRUE)
+        {
+            
+        }
     }
-    // Choose value from condition
+    
+
+
+    /* Choose value from condition */
 
 }
