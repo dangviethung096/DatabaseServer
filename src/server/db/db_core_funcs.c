@@ -745,17 +745,17 @@ off_t db_point_to_field_info_in_table_by_index(int fd, off_t table_pos, int inde
 }
 
 /* 
-    Function: db_get_index_field_info_in_table
+    Function: db_get_field_info_in_table_by_index
     Params: fd,
             table_pos,
             index
-    Description: point to index field info in table
+    Description: 
     Return value: -1 if error
                   position of number table if success
     Caution: this function change position of fd. 
              So after call this function, seek to old position
  */
-db_field_t db_get_index_field_info_in_table(int fd, off_t table_pos, int index)
+db_field_t db_get_field_info_in_table_by_index(int fd, off_t table_pos, int index)
 {
     db_field_t field;
     if(db_point_to_field_info_in_table_by_index(fd, table_pos, index) == -1)
@@ -767,9 +767,9 @@ db_field_t db_get_index_field_info_in_table(int fd, off_t table_pos, int index)
     {
         DB_SET_ERROR(DB_READ_WRONG);
     }
-    DB_TRACE(("DB:db_get_index_field_info_in_table: field id = %d\n", field.field_id));
-    DB_TRACE(("DB:db_get_index_field_info_in_table: field name = %s\n", field.field_name));
-    DB_TRACE(("DB:db_get_index_field_info_in_table: field index = %d\n", field.index));
+    DB_TRACE(("DB:db_get_field_info_in_table_by_index: field id = %d\n", field.field_id));
+    DB_TRACE(("DB:db_get_field_info_in_table_by_index: field name = %s\n", field.field_name));
+    DB_TRACE(("DB:db_get_field_info_in_table_by_index: field index = %d\n", field.index));
     return field;
 }
 

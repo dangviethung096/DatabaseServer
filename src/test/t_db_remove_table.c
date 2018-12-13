@@ -22,7 +22,7 @@ int main()
     {
         printf("Remove success\n");
     }else{
-        DB_TRACE(("Error_no: %s\n", db_error_no[db_error_no]))
+        DB_TRACE(("Error_no: %s\n", db_error_str[db_error_no]));
         printf("Remove fail\n");
     }
     

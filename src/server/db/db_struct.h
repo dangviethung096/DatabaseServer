@@ -90,6 +90,30 @@ enum db_error_no
 };
 /* END:Define ERROR */
 
+/* START:Define condition status */
+enum db_cond_status
+{
+    DB_COND_EQUAL       = 0,
+    DB_COND_NOT_EQUAL,            //1             
+    DB_COND_GREATER_THAN,         //2
+    DB_COND_LESS_THAN             //3
+};
+/* END:Define condition status */
+
+typedef struct {
+    U8bit *                 field_conditions[DB_MAX_CONDITION];
+    U8bit *                 val_conditions[DB_MAX_CONDITION];
+    enum db_cond_status     operator_conditions[DB_MAX_CONDITION];
+    int                     num_cond;
+}db_condition_t;
+
+typedef struct {
+    U8bit   **   field_names;
+    U8bit   **   values;
+    int          num_ret;
+}db_search_ret_t;
+
+
 /* Never using this structs in program
     This structs use for reference to data struct in disk */
 /* Define struct data in hard drive */

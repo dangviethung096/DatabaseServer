@@ -48,7 +48,7 @@ db_boolean_t db_set_num_table(int fd, unsigned int num_table);
 db_boolean_t db_set_database_name(int fd, char *database_name);
 db_boolean_t db_get_database_name(int fd, char *database_name);
 
-db_field_t db_get_index_field_info_in_table(int fd, off_t table_pos, int index);
+db_field_t db_get_field_info_in_table_by_index(int fd, off_t table_pos, int index);
 db_boolean_t db_set_index_field_info_in_table(int fd, off_t table_pos, int index, db_field_t field);
 
 int db_get_index_field_in_fields_bucket_by_field_name(int fd, db_table_info *table, U8bit * field_name);

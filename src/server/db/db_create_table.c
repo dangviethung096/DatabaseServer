@@ -220,6 +220,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
     for(index = 0; index < num_field; index++)
     {
         /* Field_id */
+        DB_TRACE(("\nDB:db_create_table: write field %d\n", index));
         fields[index].field_id = index + 1;
 
         /* Field name */
@@ -282,8 +283,6 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
     {
         return DB_NULL;
     }
-
-
     
 
     /* Increase num_table */

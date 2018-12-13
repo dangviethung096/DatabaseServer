@@ -107,7 +107,7 @@ static inline db_boolean_t db_read_table_info(DATABASE db)
         for(j = 0; j < db->tables[i].num_fields; j++)
         {
             // Alloc memory for field
-            db_field_t field = db_get_index_field_info_in_table(db->fd, db->tables[i].position_table, j);
+            db_field_t field = db_get_field_info_in_table_by_index(db->fd, db->tables[i].position_table, j);
             if(db_error_no != DB_NO_ERROR)
             {
                 return DB_FAILURE;

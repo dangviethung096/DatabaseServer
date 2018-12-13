@@ -39,6 +39,8 @@
 #define DB_MAX_LENGTH_FIELD_NAME       32
 
 #define DB_MAX_TABLE_IN_DATABASE       16
+
+#define DB_MAX_CONDITION               5
 /* END: define max length, size, vv..v */
 
 /* START: define size */
