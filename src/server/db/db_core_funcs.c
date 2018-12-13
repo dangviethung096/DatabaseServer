@@ -666,7 +666,7 @@ db_boolean_t db_get_database_name(int fd, char *database_name)
 
 
 /* 
-    Function: db_point_to_rows_bucket_by_field
+    Function: db_point_to_rows_bucket_by_field_index
     Params: fd,
             table_pos,
             rows_index,
@@ -678,16 +678,18 @@ db_boolean_t db_get_database_name(int fd, char *database_name)
              So after call this function, seek to old position
  */
 
-off_t db_point_to_rows_bucket_by_field(int fd, off_t table_pos, int rows_index, int field_index)
+off_t db_point_to_rows_bucket_by_field_index(int fd, off_t table_pos, int rows_index, int field_index)
 {
     off_t pos = db_point_to_rows_bucket_by_index(fd, table_pos, rows_index);
     
+    pos += (field_index * DB_UNIT_SIZE_IN_ROWS_BUCKET);
+
     if (db_seek(fd, pos, DB_BEGIN_FD) == -1)
     {
         DB_SET_ERROR(DB_SEEK_FD_FAIL);
         return -1;
     }
-    DB_TRACE(("DB:db_point_to_rows_bucket_by_field:point fields bucket %d at %ld\n", field_index, pos));
+    DB_TRACE(("DB:db_point_to_rows_bucket_by_field_index: field_index = %d at %ld\n", field_index, pos));
     return pos;
 }
 
@@ -1047,37 +1049,63 @@ int db_get_empty_index_field_in_fields_bucket_by_field_name(int fd, off_t table_
     return -1;
 }
 
+
 /* 
-    Function: db_set_field_to_rows_bucket_by_field_name
-    Params: fd,
-            table,
-            field_name
-    Description: point to index field info in table
+    Function: db_get_value_pos_from_rows_bucket_by_field_index
+    Params: 
+    Description: 
     Return value: -1 if error
-                  position of number table if success
+                  position of value if success
     Caution: this function change position of fd. 
              So after call this function, seek to old position
  */
-int db_set_field_to_rows_bucket_by_field_name(int fd, off_t table_pos, U8bit *field_name)
+off_t db_get_value_pos_from_rows_bucket_by_field_index(int fd, off_t table_pos, db_index_t row_index, db_index_t field_index)
 {
-    db_first_hash_ret_t hval = 0;
-    int num_hash = 0;
-    int index = 0;
-    db_hash_function(field_name, &hval, DB_MAX_FIELDS_IN_TABLE, &num_hash, &index);
-    int first_index = index;
-    do
+    off_t pos;
+    pos = db_point_to_rows_bucket_by_field_index(fd, table_pos, row_index, field_index);
+    if(pos == -1)
     {
-        DB_TRACE(("DB:db_get_empty_index_field_in_fields_bucket_by_field_name:index = %d\n", index));
-        if (db_is_field_in_fields_bucket_used(fd, table_pos, index) == DB_FALSE)
-        {
-            // Have an errro
-            if (db_error_no != DB_NO_ERROR)
-                break;
-            // Return success
-            return index;
-        }
-        db_hash_function(field_name, &hval, DB_MAX_FIELDS_IN_TABLE, &num_hash, &index);
-    } while (first_index != index);
+        return -1;
+    }
+    // Read position of field 
+    ssize_t io_ret_val;
+    off_t val_pos;
+    io_ret_val = db_read(fd, &val_pos, DB_UNIT_SIZE_IN_ROWS_BUCKET);
+    if(io_ret_val != DB_UNIT_SIZE_IN_ROWS_BUCKET)
+    {
+        DB_SET_ERROR(DB_READ_WRONG);
+        return -1;
+    }
+    DB_TRACE(("DB:db_get_value_pos_from_rows_bucket_by_field_index: read val_pos = %ld at %ld\n", val_pos, pos));
+    return val_pos;
+}
+/* 
+    Function: db_set_value_pos_in_rows_bucket_by_field_index
+    Params: 
+    Description: 
+    Return value: DB_FAILURE if error
+                  DB_SUCCESS if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+db_boolean_t db_set_value_pos_in_rows_bucket_by_field_index(int fd, off_t table_pos, db_index_t row_index, db_index_t field_index, off_t val_pos)
+{
+    off_t pos;
+    pos = db_point_to_rows_bucket_by_field_index(fd, table_pos, row_index, field_index);
+    if(pos == -1)
+    {
+        return DB_FAILURE;
+    }
+    // Write val_pos
+    ssize_t io_ret_val;
+    io_ret_val = db_write(fd, &val_pos, DB_UNIT_SIZE_IN_ROWS_BUCKET);
+    if(io_ret_val != DB_UNIT_SIZE_IN_ROWS_BUCKET)
+    {
+        DB_TRACE(("DB:db_set_value_pos_in_rows_bucket_by_field_index: write wrong\n"));
+        DB_SET_ERROR(DB_WRITE_WRONG);
+        return DB_FAILURE;
+    }
 
-    return -1;
+    DB_TRACE(("DB:db_set_value_pos_in_rows_bucket_by_field_index: write val_pos = %ld at %ld\n", val_pos, pos));
+    return DB_SUCCESS;
 }

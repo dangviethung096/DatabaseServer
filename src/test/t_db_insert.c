@@ -21,7 +21,9 @@ int main()
 
     // Insert field to database
     {
-        if(db_insert(db, "test_table", "hung_id", "say_hi") == DB_SUCCESS)
+        U8bit * field_name[] = {"hung_id"};
+        U8bit * value[] = {"say_hi"};
+        if(db_insert(db, "test_table", field_name, value, 1) == DB_SUCCESS)
         {
             printf("Success!\n");
         }else

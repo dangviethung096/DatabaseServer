@@ -29,8 +29,10 @@ int main()
     }
 
     printf("Create table success!\n");
-
-    if(db_insert(db, "test_table", "hung_id", "say_hi") == DB_SUCCESS)
+    U8bit * field_name[] = {"hung_id"};
+    U8bit * value[] = {"say_hi"};
+    
+    if(db_insert(db, "test_table", field_name, value, 1) == DB_SUCCESS)
     {
         printf("Insert success!\n");
     }else

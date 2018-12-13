@@ -61,6 +61,11 @@ db_boolean_t db_is_value_in_field_bucket_used(int fd, off_t field_pos, db_index_
 db_boolean_t db_set_value_in_fields_bucket(int fd, off_t field_pos, db_index_t value_index, struct db_value value);
 
 int db_get_empty_index_field_in_fields_bucket_by_field_name(int fd, off_t table_pos, U8bit *field_name);
+
+off_t db_get_value_pos_from_rows_bucket_by_field_index(int fd, off_t table_pos, db_index_t row_index, db_index_t field_index);
+db_boolean_t db_set_value_pos_in_rows_bucket_by_field_index(int fd, off_t table_pos, db_index_t row_index, db_index_t field_index, off_t val_pos);
+
+
 /* START: function with string */
 #define db_strncmp(str1, str2, num)                         \
             strncmp((const char *) str1,(const char *) str2,(size_t) num)
