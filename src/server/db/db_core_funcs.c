@@ -118,7 +118,7 @@ db_boolean_t db_get_flag_in_fields_bucket(int fd, off_t table_pos, db_index_t in
         DB_SET_ERROR(DB_READ_WRONG);
         return DB_FAILURE;
     }
-
+    DB_TRACE(("DB:db_get_flag_in_fields_bucket: flag = %x at %ld!\n", (int) *flag, pos));
     return DB_SUCCESS;
 }
 
@@ -247,7 +247,7 @@ db_boolean_t db_get_flag_in_rows_bucket(int fd, off_t table_pos, db_index_t inde
     }
 
     // Seek to flag in field bucket
-    pos += DB_POS_FLAG_IN_FIELDS_BUCKET;
+    pos += DB_POS_FLAG_IN_ROWS_BUCKET;
     if(db_seek(fd, pos, DB_BEGIN_FD) == -1)
     {
         DB_TRACE(("DB:db_get_flag_in_rows_bucket: seek_fail!\n"));
@@ -257,14 +257,15 @@ db_boolean_t db_get_flag_in_rows_bucket(int fd, off_t table_pos, db_index_t inde
 
     // get flag 
     ssize_t io_ret_val;
-    io_ret_val =  db_read(fd, &flag, DB_FLAG_T_SIZE);
+    io_ret_val =  db_read(fd, flag, DB_FLAG_T_SIZE);
+    
     if(io_ret_val != DB_FLAG_T_SIZE)
     {
         DB_TRACE(("DB:db_get_flag_in_rows_bucket: read_wrong!\n"));
         DB_SET_ERROR(DB_READ_WRONG);
         return DB_FAILURE;
     }
-
+    DB_TRACE(("DB:db_get_flag_in_rows_bucket: read flag = %d at %ld!\n", (int) *flag, pos));
     return DB_SUCCESS;
 }
 
@@ -821,9 +822,10 @@ int db_get_index_field_in_fields_bucket_by_field_name(int fd, db_table_info *tab
 
     do
     {
-        DB_TRACE(("DB:db_get_index_field_in_fields_bucket_by_field_name:index = %d\n", index));
-        // DB_TRACE(("DB:db_get_index_field_in_fields_bucket_by_field_name:field_name = %s\n", field_name));
-        // DB_TRACE(("DB:db_get_index_field_in_fields_bucket_by_field_name:table_field_name = %s\n", table->fields[index].field_name));
+        DB_TRACE(("DB:db_get_index_field_in_fields_bucket_by_field_name:field_name = %s\n", field_name));
+        DB_TRACE(("DB:db_get_index_field_in_fields_bucket_by_field_name:table->field[%d].field_name = %s\n", index, table->fields[index].field_name));
+        DB_TRACE(("DB:db_get_index_field_in_fields_bucket_by_field_name:table_pos = %ld\n", table->position_table));
+        // DB_TRACE(("DB:db_get_index_field_in_fields_bucket_by_field_name:is used = %d\n", db_is_field_in_fields_bucket_used(fd, table->position_table, index)));
         if (db_strncmp(table->fields[index].field_name, field_name, db_length_str(field_name)) == 0 
             && db_is_field_in_fields_bucket_used(fd, table->position_table, index) == DB_TRUE)
         {
@@ -878,7 +880,7 @@ int db_get_index_table_from_table_name(DATABASE db, U8bit *table_name)
     int i;
     for(i = 0; i < db->num_table; i++)
     {
-        if(db_strncmp(db->tables[i].table_name, table_name, db_strlen(table_name) + 1) == 0)
+        if(db_strncmp(db->tables[i].table_name, table_name, db_length_str(table_name)) == 0)
         {
             DB_TRACE(("DB:db_get_index_table_from_table_name:index_table = %d\n", i));
             return i;

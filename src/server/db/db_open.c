@@ -188,7 +188,7 @@ DATABASE db_open(char *db_name, char *db_path, int flag)
         DB_TRACE(("DB:db_open: Create a new db!\n"));
         /* Write name in database */
         // Check length of db_name
-        if(db_strlen(db_name) + 1 > DB_MAX_LENGTH_DB_NAME)
+        if(db_length_str(db_name) > DB_MAX_LENGTH_DB_NAME)
         {
             DB_SET_ERROR(DB_OUT_OF_BOUNDS);
             return DB_NULL;

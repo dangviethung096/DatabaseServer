@@ -38,53 +38,53 @@ BUILD_DB()
 
 BUILD_T_DB_CREATE_TABLE()
 {
-	printf "\n\n=============================================================================\n"
-	echo "${CC} -c ${TEST_PATH}/t_db_create_table.c -o ${OBJECT_PATH}/t_db_create_table.o"
+	# printf "\n\n=============================================================================\n"
+	# echo "${CC} -c ${TEST_PATH}/t_db_create_table.c -o ${OBJECT_PATH}/t_db_create_table.o"
 	${CC} -c ${TEST_PATH}/t_db_create_table.c -o ${OBJECT_PATH}/t_db_create_table.o
-	printf "\n\n=============================================================================\n"
-	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_create_table.o -o ${BIN_PATH}/t_db_create_table.out"
+	# printf "\n\n=============================================================================\n"
+	# echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_create_table.o -o ${BIN_PATH}/t_db_create_table.out"
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_create_table.o -o ${BIN_PATH}/t_db_create_table.out
 }
 
 
 BUILD_T_DB_OPEN()
 {
-	printf "\n\n=============================================================================\n"
-	echo "${CC} -c ${TEST_PATH}/t_db_open.c -o ${OBJECT_PATH}/t_db_open.o"
+	# printf "\n\n=============================================================================\n"
+	# echo "${CC} -c ${TEST_PATH}/t_db_open.c -o ${OBJECT_PATH}/t_db_open.o"
 	${CC} -c ${TEST_PATH}/t_db_open.c -o ${OBJECT_PATH}/t_db_open.o
-	printf "\n\n=============================================================================\n"
-	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_open.o -o ${BIN_PATH}/t_db_open.out"
+	# printf "\n\n=============================================================================\n"
+	# echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_open.o -o ${BIN_PATH}/t_db_open.out"
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_open.o -o ${BIN_PATH}/t_db_open.out
 }
 
 BUILD_T_DB_DEF()
 {
-	printf "\n\n=============================================================================\n"
-	echo "${CC} -c ${TEST_PATH}/t_db_def.c -o ${OBJECT_PATH}/t_db_def.o"
+	# printf "\n\n=============================================================================\n"
+	# echo "${CC} -c ${TEST_PATH}/t_db_def.c -o ${OBJECT_PATH}/t_db_def.o"
 	${CC} -c ${TEST_PATH}/t_db_def.c -o ${OBJECT_PATH}/t_db_def.o
-	printf "\n\n=============================================================================\n"
-	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_def.o -o ${BIN_PATH}/t_db_def.out"
+	# printf "\n\n=============================================================================\n"
+	# echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_def.o -o ${BIN_PATH}/t_db_def.out"
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_def.o -o ${BIN_PATH}/t_db_def.out
 }
 
 
 BUILD_T_DB_CREATE_DB()
 {
-	printf "\n\n=============================================================================\n"
-	echo "${CC} -c ${TEST_PATH}/t_db_read_db.c -o ${OBJECT_PATH}/t_db_read_db.o"
+	# printf "\n\n=============================================================================\n"
+	# echo "${CC} -c ${TEST_PATH}/t_db_read_db.c -o ${OBJECT_PATH}/t_db_read_db.o"
 	${CC} -c ${TEST_PATH}/t_db_create_db.c -o ${OBJECT_PATH}/t_db_create_db.o
-	printf "\n\n=============================================================================\n"
-	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_read_db.o -o ${BIN_PATH}/t_db_read_db.out"
+	# printf "\n\n=============================================================================\n"
+	# echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_read_db.o -o ${BIN_PATH}/t_db_read_db.out"
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_create_db.o -o ${BIN_PATH}/t_db_create_db.out
 }
 
 BUILD_T_DB_REMOVE_TABLE()
 {
-	printf "\n\n=============================================================================\n"
-	echo "${CC} -c ${TEST_PATH}/t_db_remove_table.c -o ${OBJECT_PATH}/t_db_remove_table.o"
+	# printf "\n\n=============================================================================\n"
+	# echo "${CC} -c ${TEST_PATH}/t_db_remove_table.c -o ${OBJECT_PATH}/t_db_remove_table.o"
 	${CC} -c ${TEST_PATH}/t_db_remove_table.c -o ${OBJECT_PATH}/t_db_remove_table.o
-	printf "\n\n=============================================================================\n"
-	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_remove_table.o -o ${BIN_PATH}/t_db_remove_table.out"
+	# printf "\n\n=============================================================================\n"
+	# echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_remove_table.o -o ${BIN_PATH}/t_db_remove_table.out"
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_remove_table.o -o ${BIN_PATH}/t_db_remove_table.out
 }
 
@@ -96,6 +96,16 @@ BUILD_T_DB_INSERT()
 	printf "\n\n=============================================================================\n"
 	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_insert.o -o ${BIN_PATH}/t_db_insert.out"
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_insert.o -o ${BIN_PATH}/t_db_insert.out
+}
+
+BUILD_T_DB_COMMON_TEST()
+{
+	printf "\n\n=============================================================================\n"
+	echo "${CC} -c ${TEST_PATH}/t_db_common_test.c -o ${OBJECT_PATH}/t_db_common_test.o"
+	${CC} -c ${TEST_PATH}/t_db_common_test.c -o ${OBJECT_PATH}/t_db_common_test.o
+	printf "\n\n=============================================================================\n"
+	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_common_test.o -o ${BIN_PATH}/t_db_common_test.out"
+	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_common_test.o -o ${BIN_PATH}/t_db_common_test.out
 }
 
 BUILD_TEST()
@@ -114,6 +124,8 @@ BUILD_TEST()
 	BUILD_T_DB_REMOVE_TABLE
 	printf "\nBUILD_T_DB_INSERT"
 	BUILD_T_DB_INSERT
+	printf "\nBUILD_T_DB_COMMON_TEST"
+	BUILD_T_DB_COMMON_TEST
 }
 #####################################################
 #SECTION 3: RULES

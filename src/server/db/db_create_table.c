@@ -178,14 +178,14 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
         return DB_NULL;
     }
 
-    if(db_strlen(table_name) >= DB_MAX_LENGTH_TABLE_NAME)
+    if(db_length_str(table_name) >= DB_MAX_LENGTH_TABLE_NAME)
     {
         DB_SET_ERROR(DB_OUT_OF_BOUNDS);
         return DB_NULL;
     }
     
     DB_TRACE(("DB:db_create_table:table_name = %s in pos %ld\n", table_name, db_seek(db->fd, 0, DB_CURRENT_FD) ));
-    io_ret_val = db_write(db->fd, table_name, db_strlen(table_name) + 1);
+    io_ret_val = db_write(db->fd, table_name, db_length_str(table_name));
     if(io_ret_val == -1)
     {
         DB_SET_ERROR(DB_WRITE_WRONG);
@@ -223,7 +223,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
         fields[index].field_id = index + 1;
 
         /* Field name */
-        int num_write = db_strlen(fields[index].field_name) + 1;
+        int num_write = db_length_str(fields[index].field_name);
         // Check valid
         if(num_write > DB_MAX_LENGTH_FIELD_NAME)
         {
@@ -284,12 +284,20 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
     }
 
 
+    
 
     /* Increase num_table */
     db->num_table = num_table;
     db->last_position = new_last_pos;
+    /* Table pos */
+    db->tables[index_table].position_table = pos_table;
+    /* ID table */
     db->tables[index_table].id_table = now_id_table;
+    /* Write table name */
+    memcpy(db->tables[index_table].table_name, table_name, db_length_str(table_name));
+    /* Num_field */
     db->tables[index_table].num_fields = num_field;
+    /* Fields */
     db->tables[index_table].fields = (db_field_t *) db_alloc(DB_MAX_FIELDS_IN_TABLE * DB_FIELD_INFO_SIZE);
     /* Init all field */
     for(i = 0; i < DB_MAX_FIELDS_IN_TABLE; i++)
@@ -302,6 +310,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
         int index_field = fields[i].index;
         db->tables[index_table].fields[index_field].field_id = fields[i].field_id;
         memcpy(db->tables[index_table].fields[index_field].field_name, fields[i].field_name, DB_MAX_LENGTH_FIELD_NAME);
+        DB_TRACE(("DB:db_create_table:field_name[%d] = %s\n", index_field, db->tables[index_table].fields[index_field].field_name));
         db->tables[index_table].fields[index_field].index = fields[i].index;
     }
 

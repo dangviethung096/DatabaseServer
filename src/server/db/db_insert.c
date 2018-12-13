@@ -22,11 +22,16 @@ db_boolean_t db_insert(DATABASE db, U8bit * table_name, U8bit * field_name, U8bi
     db_table_info * table;
     //Search table_id
     int table_index = db_get_index_table_from_table_name(db, table_name);
+    if(table_index == -1)
+    {
+        return DB_FAILURE;
+    }
+
     table = &(db->tables[table_index]);
     row_id = table->num_rows;
     //Search position of field_name
     int field_index = db_get_index_field_in_fields_bucket_by_field_name(db->fd, table, field_name);
-    if(field_index < 1 && field_index > DB_MAX_FIELDS_IN_TABLE)
+    if(field_index < 1 || field_index > DB_MAX_FIELDS_IN_TABLE)
     {
         return DB_FAILURE;
     }

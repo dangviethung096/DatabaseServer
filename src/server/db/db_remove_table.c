@@ -31,7 +31,7 @@ db_boolean_t db_remove_table(DATABASE db, char * table_name)
     int i;
     for(i = 0; i < old_num_table; i++)
     {
-        if(db_strncmp(db->tables[i].table_name, table_name, db_strlen(table_name) - 1) == 0)
+        if(db_strncmp(db->tables[i].table_name, table_name, db_length_str(table_name)) == 0)
         {
             // Remove table
             DB_TRACE(("DB:db_remove_table: id_table %d\n", db->tables[i].id_table));
