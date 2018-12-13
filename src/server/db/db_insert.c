@@ -18,8 +18,9 @@ db_boolean_t db_insert(DATABASE db, U8bit * table_name, U8bit * field_name[], U8
 {
     DB_RESET_ERROR();
     // Declare value
-    int row_id;
+    int row_id = -1;
     int num_row;
+    int i;
     db_table_info * table;
     //Search table_id
     int table_index = db_get_index_table_from_table_name(db, table_name);
@@ -29,10 +30,25 @@ db_boolean_t db_insert(DATABASE db, U8bit * table_name, U8bit * field_name[], U8
     }
 
     table = &(db->tables[table_index]);
-    row_id = table->num_rows;
     num_row = table->num_rows + 1;
 
-    int i;
+    /* Find row_id. row_id = index_row in rows_bucket */
+    for(i = 0; i <= DB_MAX_ROWS_IN_BUCKET; i++)
+    {
+        if(db_is_row_in_rows_bucket_used(db->fd, table->position_table, i) == DB_FALSE)
+        {
+            row_id = i;
+            break;
+        }
+    }
+    DB_TRACE(("DB:db_insert: row_id = %d!\n", row_id));
+    if(row_id == -1)
+    {
+        DB_SET_ERROR(DB_ERROR_FULL);
+        return DB_FAILURE;
+    }
+
+
     for(i = 0; i < num_value; i++)
     {
         /* Search position of field_name */
@@ -95,7 +111,7 @@ db_boolean_t db_insert(DATABASE db, U8bit * table_name, U8bit * field_name[], U8
         {
             return DB_FAILURE;
         }
-        
+
         if(db_set_value_pos_in_rows_bucket_by_field_index(db->fd, table->position_table, row_id, field_index, val_pos) == DB_FAILURE)
         {
             return DB_FAILURE;
