@@ -1191,3 +1191,34 @@ db_boolean_t db_set_num_row_in_table(int fd, off_t table_pos, U32bit num_row)
     DB_TRACE(("DB:db_set_num_row_in_table: write num_row = %u at %ld\n", num_row, pos));
     return DB_SUCCESS;
 }
+
+/* 
+    Function: db_get_value_in_fields_bucket_by_value_pos
+    Params: 
+    Description: 
+    Return value: DB_FAILURE if error
+                  DB_SUCCESS if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+db_boolean_t db_get_value_in_fields_bucket_by_value_pos(int fd, off_t val_pos, db_value_field_t * value)
+{
+    off_t pos = val_pos;
+    if(db_seek(fd, pos, DB_BEGIN_FD) == -1)
+    {
+        DB_SET_ERROR(DB_SEEK_FD_FAIL);
+        return DB_FAILURE;
+    }
+    // Get value
+    ssize_t io_ret_val = db_read(fd, &value, DB_MAX_SIZE_IN_VALUE);
+    if(io_ret_val != DB_MAX_SIZE_IN_VALUE)
+    {
+        DB_SET_ERROR(DB_READ_WRONG);
+        return DB_FAILURE;
+    }
+
+    DB_TRACE(("DB:db_get_value_in_fields_bucket_by_value_pos: read val at %ld\n", pos));
+    DB_TRACE(("DB:db_get_value_in_fields_bucket_by_value_pos: flag = %d, size = %d, row_id = %d\n", value->flag, value->size, value->row_id));
+    DB_TRACE(("DB:db_get_value_in_fields_bucket_by_value_pos: value = %s\n", value->value));
+    return DB_SUCCESS;
+}

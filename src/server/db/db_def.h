@@ -73,7 +73,7 @@
 
 #define DB_NULL ((void *)0)
 
-
+#define DB_STR_NULL "NULL"
 
 /* Define for boolean type */
 #define DB_FALSE            0
