@@ -1210,7 +1210,7 @@ db_boolean_t db_get_value_in_fields_bucket_by_value_pos(int fd, off_t val_pos, d
         return DB_FAILURE;
     }
     // Get value
-    ssize_t io_ret_val = db_read(fd, &value, DB_MAX_SIZE_IN_VALUE);
+    ssize_t io_ret_val = db_read(fd, value, DB_MAX_SIZE_IN_VALUE);
     if(io_ret_val != DB_MAX_SIZE_IN_VALUE)
     {
         DB_SET_ERROR(DB_READ_WRONG);
@@ -1218,7 +1218,7 @@ db_boolean_t db_get_value_in_fields_bucket_by_value_pos(int fd, off_t val_pos, d
     }
 
     DB_TRACE(("DB:db_get_value_in_fields_bucket_by_value_pos: read val at %ld\n", pos));
-    DB_TRACE(("DB:db_get_value_in_fields_bucket_by_value_pos: flag = %d, size = %d, row_id = %d\n", value->flag, value->size, value->row_id));
+    DB_TRACE(("DB:db_get_value_in_fields_bucket_by_value_pos: flag = %d, size = %d, row_id = %d\n", (int)value->flag, value->size, value->row_id));
     DB_TRACE(("DB:db_get_value_in_fields_bucket_by_value_pos: value = %s\n", value->value));
     return DB_SUCCESS;
 }

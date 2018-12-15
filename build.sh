@@ -108,6 +108,16 @@ BUILD_T_DB_COMMON_TEST()
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_common_test.o -o ${BIN_PATH}/t_db_common_test.out
 }
 
+BUILD_T_DB_SEARCH()
+{
+	printf "\n\n=============================================================================\n"
+	echo "${CC} -c ${TEST_PATH}/t_db_search.c -o ${OBJECT_PATH}/t_db_search.o"
+	${CC} -c ${TEST_PATH}/t_db_search.c -o ${OBJECT_PATH}/t_db_search.o
+	printf "\n\n=============================================================================\n"
+	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_search.o -o ${BIN_PATH}/t_db_search.out"
+	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_search.o -o ${BIN_PATH}/t_db_search.out
+}
+
 BUILD_TEST()
 {
 	printf "\nBUILD_DB"
@@ -126,6 +136,8 @@ BUILD_TEST()
 	BUILD_T_DB_INSERT
 	printf "\nBUILD_T_DB_COMMON_TEST"
 	BUILD_T_DB_COMMON_TEST
+	printf "\nBUILD_T_DB_SEARCH"
+	BUILD_T_DB_SEARCH
 }
 #####################################################
 #SECTION 3: RULES
