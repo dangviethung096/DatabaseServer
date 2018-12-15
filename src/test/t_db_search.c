@@ -32,8 +32,8 @@ int main()
             for(j = 0; j < num_field; j++)
             {
                 printf("field_name = %s, value = %s with i = %d, j = %d\n", ret[i].field_names[j], ret[i].values[j], i, j);
-                free(ret[i].values[i]);
                 free(ret[i].field_names[i]);
+                free(ret[i].values[i]);
             }
             free(ret[i].values);
             free(ret[i].field_names);

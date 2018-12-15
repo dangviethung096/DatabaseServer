@@ -80,10 +80,9 @@ db_boolean_t db_search(DATABASE db, U8bit * table_name, U8bit * field_name[], in
     int row_index;
     int table_index = db_get_index_table_from_table_name(db, table_name);
     DB_TRACE(("DB:db_search: get table index = %d\n", table_index));
-
     db_table_info * table = &(db->tables[table_index]);
     int num_row = table->num_rows;
-    int num_condition = cond->num_cond;
+    
 
     int row_ids[DB_MAX_ROWS_IN_BUCKET];
     int num_ret_row = 0;
@@ -96,6 +95,8 @@ db_boolean_t db_search(DATABASE db, U8bit * table_name, U8bit * field_name[], in
     if(cond != DB_NULL)
     {
         /* Choose value from condition */
+        int num_condition = cond->num_cond;
+        DB_TRACE(("DB:db_search:search condition, num_condition = %d\n", num_condition));
         for (i = 0; i < num_condition; i++)
         {
             int cond_field_index = db_get_index_field_in_fields_bucket_by_field_name(db->fd, table, cond->field_conditions[i]);
@@ -116,16 +117,18 @@ db_boolean_t db_search(DATABASE db, U8bit * table_name, U8bit * field_name[], in
     }else
     {
         /* Search all row id because no condition */
+        DB_TRACE(("DB:db_search:search no condition\n"));
         for(row_index = 0, i = 0; i < num_row && row_index <= DB_MAX_ROWS_IN_BUCKET; row_index++)
         {
             if(db_is_row_in_rows_bucket_used(db->fd, table->position_table, row_index) == DB_TRUE)
             {
                 row_ids[i] = row_index;
+                DB_TRACE(("DB:db_search:add row_id = %d\n", row_ids[i]));
                 i++;
             }
         }
-
-        if(i < num_row)
+        num_ret_row = i;
+        if(num_ret_row < num_row)
         {
             DB_SET_ERROR(DB_ERROR_NOT_ENOUGH);
             return DB_FAILURE;
@@ -154,6 +157,7 @@ db_boolean_t db_search(DATABASE db, U8bit * table_name, U8bit * field_name[], in
     {
         /* Search all field. get all field index */
         num_field = table->num_fields;
+        DB_TRACE(("DB:db_search:search all field in table, num_field = %d\n", num_field));
         for(i = 0; i < num_field; i++)
         {
             field_indexes[i] = db_get_index_field_in_fields_bucket_by_field_name(db->fd, table,(U8bit *) table->fields[i].field_name);
@@ -183,7 +187,6 @@ db_boolean_t db_search(DATABASE db, U8bit * table_name, U8bit * field_name[], in
     for (i = 0; i < num_ret_row; i++)
     {
         DB_TRACE(("DB:db_search: row_index = %d\n", row_index));
-
         (*ret)[i].field_names = (U8bit **) db_alloc(num_field * sizeof(U8bit *) );
         (*ret)[i].values = (U8bit **)db_alloc(num_field * sizeof(U8bit *));
         for(j = 0; j < num_field; j++)
