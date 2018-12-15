@@ -129,6 +129,9 @@
 #define DB_FLAG_USED 0x01
 #define DB_FLAG_NOT_USED 0x00
 
+#define DB_FLAG_ADD     0x01
+#define DB_FLAG_CHECK   0x02
+
 /* END: define flag in db_field_in_table_data */
 
 

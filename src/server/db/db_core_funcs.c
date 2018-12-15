@@ -1222,3 +1222,101 @@ db_boolean_t db_get_value_in_fields_bucket_by_value_pos(int fd, off_t val_pos, d
     DB_TRACE(("DB:db_get_value_in_fields_bucket_by_value_pos: value = %s\n", value->value));
     return DB_SUCCESS;
 }
+/* 
+    Function: db_is_value_in_row_bucket_used
+    Params: 
+    Description: 
+    Return value: DB_FALSE if error or not have value in row bucket
+                  DB_TRUE if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+db_boolean_t db_is_value_in_row_bucket_used(int fd, off_t table_pos, int row_index, int field_index)
+{
+    off_t pos = db_point_to_rows_bucket_by_field_index(fd, table_pos, row_index, field_index);
+    if(pos == -1)
+    {
+        return DB_FALSE;
+    }
+    // Get position of value in row
+    off_t val_pos = db_get_value_pos_from_rows_bucket_by_field_index(fd, table_pos, row_index, field_index);
+    if(val_pos == -1)
+    {
+        return DB_FALSE;
+    }
+    DB_TRACE(("DB:db_is_value_in_row_bucket_used: value_pos = %ld\n", val_pos));
+    return DB_TRUE;
+}
+
+/* 
+    Function: db_is_value_in_field_bucket_used_with_field_index
+    Params: fd,
+            fields_pos,
+            value_index
+    Description: search new memory for store value in fields bucket
+    Return value: DB_FALSE if value is not used
+                  DB_TRUE if value is used
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+*/
+db_boolean_t db_is_value_in_field_bucket_used_with_field_index(int fd, off_t table_pos,int field_index, db_index_t value_index)
+{
+    off_t field_pos = db_point_to_fields_bucket_by_index(fd, table_pos, field_index);
+    if(field_pos == -1)
+    {
+        return DB_FALSE;
+    }
+    // Get value pos
+    DB_TRACE(("DB:db_is_value_in_field_bucket_used: field_pos = %ld, value_index = %d\n", field_pos, value_index));
+    db_value_field_t value;
+    if (db_get_value_in_fields_bucket(fd, field_pos, value_index, &value) == DB_FAILURE)
+    {
+        return DB_FAILURE;
+    }
+
+    if (value.flag == DB_FLAG_USED)
+    {
+        return DB_TRUE;
+    }
+
+    return DB_FALSE;
+}
+
+/* 
+    Function: db_get_value_in_fields_bucket_with_field_index
+    Params: 
+    Description: 
+    Return value: DB_FAILURE if error
+                  DB_SUCCESS if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+*/
+db_boolean_t db_get_value_in_fields_bucket_with_field_index(int fd, off_t table_pos, db_index_t field_index, db_index_t value_index, db_value_field_t *value)
+{
+    off_t field_pos = db_point_to_fields_bucket_by_index(fd, table_pos, field_index);
+    if(field_pos == -1)
+    {
+        return DB_FAILURE;
+    }
+
+    off_t pos = db_point_to_fields_bucket_by_value_index(fd, field_pos, value_index);
+    if (pos == -1)
+    {
+        return DB_FAILURE;
+    }
+
+    ssize_t io_ret_val = db_read(fd, value, DB_UNIT_SIZE_IN_FIELDS_BUCKET);
+
+    if (io_ret_val == -1)
+    {
+        DB_TRACE(("DB:db_get_value_in_fields_bucket: io_ret_val = %lu at %ld\n", io_ret_val, pos));
+        DB_SET_ERROR(DB_READ_WRONG);
+        return DB_FAILURE;
+    }
+
+    DB_TRACE(("DB:db_get_value_in_fields_bucket: get value.flag = %d at %ld\n", (int)value->flag, pos));
+    DB_TRACE(("DB:db_get_value_in_fields_bucket: get value.row_id = %d at %ld\n", value->row_id, pos));
+    DB_TRACE(("DB:db_get_value_in_fields_bucket: get value.size = %d at %ld\n", value->size, pos));
+    DB_TRACE(("DB:db_get_value_in_fields_bucket: get value.val = %s at %ld\n", value->value, pos));
+    return DB_SUCCESS;
+}

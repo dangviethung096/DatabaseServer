@@ -80,14 +80,15 @@ typedef U32bit db_return_t;
 /* START:Define ERROR */
 enum db_error_no
 {
-    DB_NO_ERROR = 0,    //0
+    DB_NO_ERROR = 0,        //0
     DB_READ_WRONG = 1,
-    DB_WRITE_WRONG,     //2
-    DB_SEEK_FD_FAIL,    //3
-    DB_NULL_VALUE,      //4
-    DB_NOT_EXIST,       //5
-    DB_EXISTED,         //6
-    DB_ERROR_FULL,      //7
+    DB_WRITE_WRONG,         //2
+    DB_SEEK_FD_FAIL,        //3
+    DB_NULL_VALUE,          //4
+    DB_NOT_EXIST,           //5
+    DB_EXISTED,             //6
+    DB_ERROR_FULL,          //7
+    DB_ERROR_NOT_ENOUGH,
     DB_OUT_OF_BOUNDS = 11
 };
 /* END:Define ERROR */
