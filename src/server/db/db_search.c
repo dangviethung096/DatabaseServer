@@ -14,52 +14,7 @@
 #include "db_error.h"
 #include "db_hash_function.h"
 
-/* 
-    Function: db_search_row_with_equal_condition
-    Params: 
-    Description: 
-    Return value: DB_FAILURE if error
-                  DB_SUCCESS if success
-    Caution: this function change position of fd. 
-             So after call this function, seek to old position
- */
-db_boolean_t db_search_row_with_equal_condition(int fd, off_t table_pos, int field_index, U8bit * value, int * row_ids, int * num_row)
-{
-    DB_RESET_ERROR();
-    /* Init */
-    db_key_t key;
-    key.val = value;
-    key.size = db_length_str(value);
-    
-    db_first_hash_ret_t hval =  db_first_hash(key);
 
-    int first_index = hval % DB_MAX_ROWS_IN_BUCKET + 1;
-    int index = first_index;
-    int hval2 = 1 + hval % (DB_MAX_ROWS_IN_BUCKET - 2);
-    *num_row = 0;
-    do
-    {
-        if (db_is_value_in_field_bucket_used_with_field_index(fd, table_pos, field_index, index) == DB_FALSE)
-        {
-            if(db_error_no != DB_NO_ERROR)
-            {
-                return DB_FAILURE;
-            }
-            break;
-        }
-        db_value_field_t ret_value;
-        if(db_get_value_in_fields_bucket_with_field_index(fd, table_pos, field_index, index, &ret_value) == DB_FAILURE)
-        {
-            return DB_FAILURE;
-        }
-
-        row_ids[(*num_row)++] =  ret_value.row_id;
-        index = db_second_hash(hval2, DB_MAX_ROWS_IN_BUCKET, index);
-
-    }while(index != first_index);
-    
-    return DB_SUCCESS;
-}
 /* 
     Function: db_search
     Params: 
@@ -84,7 +39,7 @@ db_boolean_t db_search(DATABASE db, U8bit * table_name, U8bit * field_name[], in
     int num_row = table->num_rows;
     
 
-    int row_ids[DB_MAX_ROWS_IN_BUCKET];
+    int row_ids[DB_MAX_ROWS_IN_BUCKET + 1];
     int num_ret_row = 0;
     /* Init row id */
     for(i = 0; i < num_row; i++)
@@ -100,6 +55,7 @@ db_boolean_t db_search(DATABASE db, U8bit * table_name, U8bit * field_name[], in
         for (i = 0; i < num_condition; i++)
         {
             int cond_field_index = db_get_index_field_in_fields_bucket_by_field_name(db->fd, table, cond->field_conditions[i]);
+            DB_TRACE(("DB:db_search:condition = %d\n", i));
             switch (cond->operator_conditions[i])
             {
                 case DB_COND_EQUAL:
@@ -113,6 +69,7 @@ db_boolean_t db_search(DATABASE db, U8bit * table_name, U8bit * field_name[], in
                     DB_SET_ERROR(DB_OUT_OF_BOUNDS);
                     return DB_FAILURE;
             }
+
         }
     }else
     {

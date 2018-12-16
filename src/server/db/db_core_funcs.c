@@ -1320,3 +1320,138 @@ db_boolean_t db_get_value_in_fields_bucket_with_field_index(int fd, off_t table_
     DB_TRACE(("DB:db_get_value_in_fields_bucket: get value.val = %s at %ld\n", value->value, pos));
     return DB_SUCCESS;
 }
+
+/* 
+    Function: db_search_row_with_equal_condition
+    Params: 
+    Description: 
+    Return value: DB_FAILURE if error
+                  DB_SUCCESS if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+db_boolean_t db_search_row_with_equal_condition(int fd, off_t table_pos, int field_index, U8bit * value, int * row_ids, int * num_row)
+{
+    DB_RESET_ERROR();
+    DB_TRACE(("DB:db_search_row_with_equal_condition: field_index = %d, value = %s\n", field_index, value));
+    /* Init */
+    *num_row = 0;
+
+    db_first_hash_ret_t hval;
+    int num_hash = 0;
+    int index, first_index;
+    db_hash_function(value, &hval, DB_MAX_ROWS_IN_BUCKET, &num_hash, &first_index);
+    index = first_index;
+
+    do
+    {
+        if (db_is_value_in_field_bucket_used_with_field_index(fd, table_pos, field_index, index) == DB_FALSE)
+        {
+            if(db_error_no != DB_NO_ERROR)
+            {
+                return DB_FAILURE;
+            }
+            break;
+        }
+        db_value_field_t ret_value;
+        if(db_get_value_in_fields_bucket_with_field_index(fd, table_pos, field_index, index, &ret_value) == DB_FAILURE)
+        {
+            return DB_FAILURE;
+        }
+        DB_TRACE(("DB:db_search_row_with_equal_condition: row_id = %d\n", ret_value.row_id));
+        row_ids[(*num_row)++] =  ret_value.row_id;
+        db_hash_function(value, &hval, DB_MAX_ROWS_IN_BUCKET, &num_hash, &index);
+
+    }while(index != first_index);
+    
+    DB_TRACE(("DB:db_search_row_with_equal_condition: num_row = %d\n", *num_row));
+    return DB_SUCCESS;
+}
+
+/* 
+    Function: db_set_value_in_fields_bucket_by_field_index
+    Params: fd,
+            fields_pos,
+            value_index
+    Description: Set value in field bucket
+    Return value: -1 if cannot found any table_name in database
+                  index of table if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+*/
+db_boolean_t db_set_value_in_fields_bucket_by_field_index(int fd, off_t table_pos, db_index_t field_index, db_index_t value_index, db_value_field_t value)
+{
+    off_t field_pos = db_point_to_fields_bucket_by_index(fd, table_pos, field_index);
+    if(field_pos == -1)
+    {
+        return DB_FAILURE;
+    }
+
+    off_t pos = db_point_to_fields_bucket_by_value_index(fd, field_pos, value_index);
+    if (pos == -1)
+    {
+        return DB_FAILURE;
+    }
+
+    ssize_t io_ret_val = db_write ( fd, &value, DB_UNIT_SIZE_IN_FIELDS_BUCKET );
+
+    if (io_ret_val == -1)
+    {
+        DB_TRACE(("DB:db_set_value_in_fields_bucket_by_field_index: io_ret_val = %lu at %ld\n", io_ret_val, pos));
+        DB_SET_ERROR(DB_WRITE_WRONG);
+        return DB_FAILURE;
+    }
+
+    DB_TRACE(("DB:db_set_value_in_fields_bucket_by_field_index: set value.flag = %d at %ld\n", (int) value.flag, pos));
+    DB_TRACE(("DB:db_set_value_in_fields_bucket_by_field_index: set value.row_id = %d at %ld\n", value.row_id, pos));
+    DB_TRACE(("DB:db_set_value_in_fields_bucket_by_field_index: set value.size = %d at %ld\n", value.size, pos));
+    DB_TRACE(("DB:db_set_value_in_fields_bucket_by_field_index: set value.val = %s at %ld\n", value.value, pos));
+    return DB_SUCCESS;
+}
+
+/* 
+    Function: db_remove_value_in_fields_bucket
+    Params: 
+    Description: 
+    Return value: DB_FAILURE if error
+                  DB_SUCCESS if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+db_boolean_t db_remove_value_in_field_bucket(int fd, off_t table_pos, int field_index, int value_index)
+{
+    db_value_field_t reset_value;
+    reset_value.flag = DB_FLAG_NOT_USED;
+    reset_value.size = db_length_str(DB_STR_NULL);
+    reset_value.row_id = -1;
+    memcpy(reset_value.value, DB_STR_NULL, reset_value.size);
+
+    if(db_set_value_in_fields_bucket_by_field_index(fd, table_pos, field_index, value_index, reset_value) == DB_FAILURE)
+    {
+        return DB_FAILURE;
+    }
+
+    DB_TRACE(("DB:db_remove_value_in_field_bucket: remove field_index = %d, value_index = %d success\n", field_index, value_index));
+    return DB_SUCCESS;
+}
+
+/* 
+    Function: db_remove_value_pos_in_rows_bucket
+    Params: 
+    Description: 
+    Return value: DB_FAILURE if error
+                  DB_SUCCESS if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+
+db_boolean_t db_remove_value_pos_in_rows_bucket(int fd, off_t table_pos, db_index_t row_index, db_index_t field_index)
+{
+    off_t value_pos = -1;
+    if(db_set_value_pos_in_rows_bucket_by_field_index(fd, table_pos, row_index, field_index, value_pos) == DB_FAILURE)
+    {
+        return DB_FAILURE;
+    }
+
+    return DB_SUCCESS;
+}

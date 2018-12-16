@@ -74,6 +74,8 @@ db_boolean_t db_is_value_in_row_bucket_used(int fd, off_t table_pos, int row_ind
 db_boolean_t db_is_value_in_field_bucket_used_with_field_index(int fd, off_t table_pos, int field_index, db_index_t value_index);
 
 db_boolean_t db_get_value_in_fields_bucket_with_field_index(int fd, off_t table_pos, db_index_t field_index, db_index_t value_index, db_value_field_t *value);
+
+db_boolean_t db_search_row_with_equal_condition(int fd, off_t table_pos, int field_index, U8bit * value, int * row_ids, int * num_row);
 /* START: function with string */
 #define db_strncmp(str1, str2, num)                         \
             strncmp((const char *) str1,(const char *) str2,(size_t) num)
