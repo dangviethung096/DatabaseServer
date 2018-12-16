@@ -1408,6 +1408,38 @@ db_boolean_t db_set_value_in_fields_bucket_by_field_index(int fd, off_t table_po
     DB_TRACE(("DB:db_set_value_in_fields_bucket_by_field_index: set value.val = %s at %ld\n", value.value, pos));
     return DB_SUCCESS;
 }
+/* 
+    Function: db_get_empty_value_in_field_of_fields_bucket
+    Params: 
+    Description: 
+    Return value: -1 if error
+                  index of value if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+int db_get_empty_value_in_field_of_fields_bucket(int fd, off_t table_pos, int field_index, U8bit * value)
+{
+    db_first_hash_ret_t hval;
+    int num_hash = 0;
+    int index, first_index;
+    db_hash_function(value, &hval, DB_MAX_ROWS_IN_BUCKET, &num_hash, &first_index);
+    index = first_index;
+    do
+    {
+        if(db_is_value_in_field_bucket_used_with_field_index(fd, table_pos, field_index, index) == DB_FALSE)
+        {
+            if(db_error_no != DB_NO_ERROR)
+            {
+                return -1;
+            }
+            break;
+        }
+        db_hash_function(value, &hval, DB_MAX_ROWS_IN_BUCKET, &num_hash, &index);
+    }while(index != first_index);
+    
+    DB_TRACE(("DB:db_get_empty_value_in_field_of_fields_bucket: get empty index =  %d\n", index));
+    return index;
+}
 
 /* 
     Function: db_remove_value_in_fields_bucket
@@ -1431,6 +1463,58 @@ db_boolean_t db_remove_value_in_field_bucket(int fd, off_t table_pos, int field_
         return DB_FAILURE;
     }
 
+
+    /* Get all value in field of field_bucket and rehash */
+    off_t field_pos = db_point_to_fields_bucket_by_index(fd, table_pos, field_index);
+    if(field_pos == -1)
+    {
+        return DB_FAILURE;
+    }
+    // Get all values
+    db_value_field_t values[DB_MAX_ROWS_IN_BUCKET];
+    int value_count = 0;
+    int i;
+    for(i = 1; i <= DB_MAX_ROWS_IN_BUCKET; i++)
+    {
+        
+        if(db_is_value_in_field_bucket_used(fd, field_pos, value_index) == DB_FALSE)
+        {
+            if(db_error_no != DB_NO_ERROR)
+            {
+                return DB_FAILURE;
+            }
+            // Nothing to do because no have any value
+        }else
+        {
+            if(db_get_value_in_fields_bucket(fd, field_pos, value_index, &(values[value_count]) ) == DB_FAILURE)
+            {
+                return DB_FAILURE;
+            }
+            if(db_set_value_in_fields_bucket(fd, field_pos, value_index, reset_value) == DB_FAILURE)
+            {
+                return DB_FAILURE;
+            }
+            value_count++;
+        }
+    }
+    // Rehash
+    for(i = 0; i < value_count; i++)
+    {
+        
+        int new_value_index = db_get_empty_value_in_field_of_fields_bucket(fd, table_pos, field_index, values[i].value);
+        if(new_value_index == -1)
+        {
+            return DB_FAILURE;
+        }
+        if(db_set_value_in_fields_bucket(fd, field_pos, new_value_index, values[i]) == DB_FAILURE)
+        {
+            return DB_FAILURE;
+        }
+
+        DB_TRACE(("DB:db_remove_value_in_field_bucket: reshash value = %s in %d of field\n", values[i].value, new_value_index));
+    }
+
+
     DB_TRACE(("DB:db_remove_value_in_field_bucket: remove field_index = %d, value_index = %d success\n", field_index, value_index));
     return DB_SUCCESS;
 }
@@ -1448,10 +1532,65 @@ db_boolean_t db_remove_value_in_field_bucket(int fd, off_t table_pos, int field_
 db_boolean_t db_remove_value_pos_in_rows_bucket(int fd, off_t table_pos, db_index_t row_index, db_index_t field_index)
 {
     off_t value_pos = -1;
+    DB_TRACE(("DB:db_remove_value_pos_in_rows_bucket: remove row_index = %d , field_index = %d\n", row_index, field_index));
     if(db_set_value_pos_in_rows_bucket_by_field_index(fd, table_pos, row_index, field_index, value_pos) == DB_FAILURE)
     {
         return DB_FAILURE;
     }
 
     return DB_SUCCESS;
+}
+/* 
+    Function: db_remove_row_in_rows_bucket
+    Params: 
+    Description: 
+    Return value: DB_FAILURE if error
+                  DB_SUCCESS if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+
+db_boolean_t db_remove_row_in_rows_bucket(int fd, off_t table_pos, db_index_t row_index)
+{
+    int i;
+    
+    db_flag_t flag = DB_FLAG_NOT_USED;
+    if(db_set_flag_in_rows_bucket(fd, table_pos, row_index, flag) == DB_FAILURE)
+    {
+        return DB_FAILURE;
+    }
+    DB_TRACE(("DB:db_remove_row_in_rows_bucket: set flag = %d\n", (int)flag));
+
+    for(i = 1; i <= DB_MAX_FIELDS_IN_TABLE; i++)
+    {
+        if(db_remove_value_pos_in_rows_bucket(fd, table_pos, row_index, i) == DB_FAILURE)
+        {
+            return DB_FAILURE;
+        }
+    }
+    DB_TRACE(("DB:db_remove_row_in_rows_bucket: remove row_index = %d\n", row_index));
+    return DB_SUCCESS;
+}
+
+/* 
+    Function: db_get_value_index_from_rows_bucket
+    Params: 
+    Description: 
+    Return value: DB_FAILURE if error
+                  DB_SUCCESS if success
+    Caution: this function change position of fd. 
+             So after call this function, seek to old position
+ */
+int db_get_value_index_from_rows_bucket(int fd, int table_pos, int row_index, int field_index)
+{
+    off_t value_pos = db_get_value_pos_from_rows_bucket_by_field_index(fd, table_pos, row_index, field_index);
+    if(value_pos == -1)
+    {
+        return -1;
+    }
+    off_t field_pos = db_point_to_fields_bucket_by_index(fd, table_pos, field_index);
+    int value_index = (value_pos - field_pos)/(DB_UNIT_SIZE_IN_FIELDS_BUCKET);
+    
+    DB_TRACE(("DB:db_get_value_index_from_rows_bucket: value_index = %d\n", value_index));
+    return value_index;
 }

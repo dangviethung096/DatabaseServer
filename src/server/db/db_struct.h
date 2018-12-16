@@ -88,7 +88,8 @@ enum db_error_no
     DB_NOT_EXIST,           //5
     DB_EXISTED,             //6
     DB_ERROR_FULL,          //7
-    DB_ERROR_NOT_ENOUGH,
+    DB_ERROR_NOT_ENOUGH,    //8
+    DB_ERROR_WRONG_PARAM,   //9
     DB_OUT_OF_BOUNDS = 11
 };
 /* END:Define ERROR */

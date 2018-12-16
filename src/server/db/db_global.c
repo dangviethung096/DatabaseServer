@@ -19,9 +19,9 @@ const char *db_error_str[] = {
     "DB_NULL_VALUE",    //4
     "DB_NOT_EXIST",     //5
     "DB_EXISTED",       //6
-    "DB_ERROR_FULL",    //7
-    "",                 //8
-    "",                 //9
+    "DB_ERROR_FULL",            //7
+    "DB_ERROR_NOT_ENOUGH",      //8
+    "DB_ERROR_WRONG_PARAM",     //9
     "",                 //10
     "DB_OUT_OF_BOUNDS", //11
 };

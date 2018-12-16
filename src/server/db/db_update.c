@@ -31,6 +31,11 @@ db_boolean_t db_update(DATABASE db, U8bit * table_name, U8bit * field_names[], U
 
     // Get table_id
     int table_index = db_get_index_table_from_table_name(db, table_name);
+    if(table_index == -1)
+    {
+        return DB_FAILURE;
+    }
+
     db_table_info * table = &(db->tables[table_index]);
 
     /* Get rows is udpate */
@@ -84,12 +89,41 @@ db_boolean_t db_update(DATABASE db, U8bit * table_name, U8bit * field_names[], U
         }
     }
 
-
+    // Remove old value and insert new value
     for(i = 0; i < num_row; i++)
     {
         for(j = 0; j < num_field; j++)
         {
+            // Get field in rows
+            int value_index = db_get_value_index_from_rows_bucket(db->fd, table->position_table, row_ids[i], field_indexes[j]);
+            if(value_index == -1)
+            {
+                return DB_FAILURE;
+            }
             
+            // Remove field index
+            if(db_remove_value_in_field_bucket(db->fd, table->position_table, field_indexes[j], value_index) == DB_FAILURE)
+            {
+                return DB_FAILURE;
+            }
+
+            // get new value index
+            int new_value_index = db_get_empty_value_in_field_of_fields_bucket(db->fd, table->position_table, field_indexes[j], update_values[j]);
+            if(new_value_index == -1)
+            {
+                return DB_FAILURE;
+            }
+            // Init new value
+            db_value_field_t value;
+            value.flag = DB_FLAG_USED;
+            value.row_id = row_ids[i];
+            value.size = db_length_str(update_values[j]);
+            memcpy(value.value, update_values[j], value.size);
+            // Insert new value
+            if(db_set_value_in_fields_bucket_by_field_index(db->fd, table->position_table, field_indexes[j], new_value_index, value) == DB_FAILURE)
+            {
+                return DB_FAILURE;
+            }
         }
     }
 
