@@ -27,7 +27,7 @@ int main()
     cond.val_conditions[0] = "hung1";
     cond.num_cond = 1;
     db_search_ret_t * ret;
-    if(db_search(db, "test_table", field_name, num_field, &cond, &ret) == DB_SUCCESS)
+    if(db_search(db, "test_table", field_name, num_field, DB_NULL, &ret) == DB_SUCCESS)
     {
         printf("Search Success with number return %d\n", ret[0].num_ret);
         int i, j;
@@ -45,7 +45,7 @@ int main()
         free(ret);
     }else
     {
-        DB_TRACE(("Error_no: %s\n", db_error_str[db_error_no]));
+        printf("Error_no: %s\n", db_error_str[db_error_no]);
         printf("Search Fail!\n");
         return 0;
     }

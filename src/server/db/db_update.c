@@ -139,6 +139,11 @@ db_boolean_t db_update(DATABASE db, U8bit * table_name, U8bit * field_names[], U
                 return DB_FAILURE;
             }
 
+            if(db_set_value_pos_in_rows_bucket_by_field_index(db->fd, table->position_table, row_ids[i], field_indexes[j], val_pos) == DB_FAILURE)
+            {
+                return DB_FAILURE;
+            }
+
         }
     }
 

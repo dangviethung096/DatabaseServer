@@ -1456,6 +1456,7 @@ int db_get_empty_value_in_field_of_fields_bucket(int fd, off_t table_pos, int fi
  */
 db_boolean_t db_remove_value_in_field_bucket(int fd, off_t table_pos, int field_index, int value_index)
 {
+    DB_TRACE(("DB:db_remove_value_in_field_bucket: remove value %d in field %d\n", value_index, field_index));
     db_value_field_t reset_value, old_value;
     reset_value.flag = DB_FLAG_NOT_USED;
     reset_value.size = db_length_str(DB_STR_NULL);
@@ -1491,7 +1492,7 @@ db_boolean_t db_remove_value_in_field_bucket(int fd, off_t table_pos, int field_
     for(i = 1; i <= DB_MAX_ROWS_IN_BUCKET; i++)
     {
         
-        if(db_is_value_in_field_bucket_used(fd, field_pos, value_index) == DB_FALSE)
+        if(db_is_value_in_field_bucket_used(fd, field_pos, i) == DB_FALSE)
         {
             if(db_error_no != DB_NO_ERROR)
             {
@@ -1500,11 +1501,11 @@ db_boolean_t db_remove_value_in_field_bucket(int fd, off_t table_pos, int field_
             // Nothing to do because no have any value
         }else
         {
-            if(db_get_value_in_fields_bucket(fd, field_pos, value_index, &(values[value_count]) ) == DB_FAILURE)
+            if(db_get_value_in_fields_bucket(fd, field_pos, i, &(values[value_count]) ) == DB_FAILURE)
             {
                 return DB_FAILURE;
             }
-            if(db_set_value_in_fields_bucket(fd, field_pos, value_index, reset_value) == DB_FAILURE)
+            if(db_set_value_in_fields_bucket(fd, field_pos, i, reset_value) == DB_FAILURE)
             {
                 return DB_FAILURE;
             }
@@ -1536,7 +1537,7 @@ db_boolean_t db_remove_value_in_field_bucket(int fd, off_t table_pos, int field_
         {
             return DB_FAILURE;
         }
-        
+
         DB_TRACE(("DB:db_remove_value_in_field_bucket: reshash value = %s in %d of field\n", values[i].value, new_value_index));
     }
 

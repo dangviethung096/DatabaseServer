@@ -2,6 +2,7 @@
 #include "../server/db/db_api.h"
 #include "../server/db/db_struct.h"
 #include "../server/db/db_global.h"
+#include "../server/db/db_error.h"
 #include <string.h>
 #include <stdlib.h>
 int main()
@@ -19,10 +20,21 @@ int main()
         return 0;
     }
 
-    // Insert field to database
+    // delete row in database
     {
-        U8bit * field_name[] = {"hung_id"};
-        U8bit * value[] = {"hung1"};
+        
+        db_condition_t cond;
+        cond.num_cond = 1;
+        cond.operator_conditions[0] = DB_COND_EQUAL;
+        cond.field_conditions[0] = "hung_id";
+        cond.val_conditions[0] = "hung1";
+        if(db_delete(db, "test_table", &cond) == DB_SUCCESS)
+        {
+            printf("Delete success!\n");
+        }else{
+            printf("Delete fail!\n");
+            printf("Error: %s\n", db_error_str[db_error_no]);
+        }
         
     }
 

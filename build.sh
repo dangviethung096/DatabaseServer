@@ -118,6 +118,26 @@ BUILD_T_DB_SEARCH()
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_search.o -o ${BIN_PATH}/t_db_search.out
 }
 
+BUILD_T_DB_DELETE()
+{
+	printf "\n\n=============================================================================\n"
+	echo "${CC} -c ${TEST_PATH}/t_db_delete.c -o ${OBJECT_PATH}/t_db_delete.o"
+	${CC} -c ${TEST_PATH}/t_db_delete.c -o ${OBJECT_PATH}/t_db_delete.o
+	printf "\n\n=============================================================================\n"
+	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_delete.o -o ${BIN_PATH}/t_db_delete.out"
+	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_delete.o -o ${BIN_PATH}/t_db_delete.out
+}
+
+BUILD_T_DB_UPDATE()
+{
+	printf "\n\n=============================================================================\n"
+	echo "${CC} -c ${TEST_PATH}/t_db_update.c -o ${OBJECT_PATH}/t_db_update.o"
+	${CC} -c ${TEST_PATH}/t_db_update.c -o ${OBJECT_PATH}/t_db_update.o
+	printf "\n\n=============================================================================\n"
+	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_update.o -o ${BIN_PATH}/t_db_update.out"
+	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_update.o -o ${BIN_PATH}/t_db_update.out
+}
+
 BUILD_TEST()
 {
 	printf "\nBUILD_DB"
@@ -138,6 +158,10 @@ BUILD_TEST()
 	BUILD_T_DB_COMMON_TEST
 	printf "\nBUILD_T_DB_SEARCH"
 	BUILD_T_DB_SEARCH
+	printf "\nBUILD_T_DB_DELETE"
+	BUILD_T_DB_DELETE
+	printf "\nBUILD_T_DB_UPDATE"
+	BUILD_T_DB_UPDATE
 }
 #####################################################
 #SECTION 3: RULES

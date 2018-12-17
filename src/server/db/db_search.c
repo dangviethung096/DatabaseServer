@@ -159,7 +159,9 @@ db_boolean_t db_search(DATABASE db, U8bit * table_name, U8bit * field_name[], in
                 {
                     return DB_FAILURE;
                 }
+                DB_TRACE(("DB:db_search: Have no value in %d at row %d\n", field_indexes[j], row_ids[i]));
                 memcpy((*ret)[i].values[j], DB_STR_NULL, db_length_str(DB_STR_NULL));
+                DB_TRACE(("DB:db_search: field_name = %s, value = %s at i = %d, j = %d\n", (*ret)[i].field_names[j], (*ret)[i].values[j], i, j));
                 continue;
             }
             

@@ -29,7 +29,7 @@ db_boolean_t db_delete(DATABASE db, U8bit * table_name, db_condition_t * cond)
     int i, j;
     int row_ids[DB_MAX_ROWS_IN_BUCKET + 1];
     int num_row = 0;
-
+    
     // Get table_id
     int table_index = db_get_index_table_from_table_name(db, table_name);
     if(table_index == -1)
@@ -39,6 +39,7 @@ db_boolean_t db_delete(DATABASE db, U8bit * table_name, db_condition_t * cond)
 
     db_table_info * table = &(db->tables[table_index]);
 
+    int table_num_row = table->num_rows -1;
     /* Get condition */
     if(cond != DB_NULL)
     {
@@ -98,6 +99,13 @@ db_boolean_t db_delete(DATABASE db, U8bit * table_name, db_condition_t * cond)
             return DB_FAILURE;
         }
         DB_TRACE(("DB:db_delete: delete row_id = %d\n", row_ids[i]));
+        // Decrease num row in table
+        table->num_rows = table_num_row;
+        if(db_set_num_row_in_table(db->fd, table->position_table, table_num_row) == DB_FAILURE)
+        {
+            return DB_FAILURE;
+        }
+        
     }
 
     return DB_SUCCESS;
