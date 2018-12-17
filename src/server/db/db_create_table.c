@@ -93,7 +93,7 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
             value.flag = DB_FLAG_NOT_USED;
             value.row_id = -1;
             value.size = 0;
-            memcpy(value.value, "NULL", db_length_str("NULL"));
+            memcpy(value.value, DB_STR_NULL, db_length_str(DB_STR_NULL));
 
             off_t field_pos = pos_table + DB_POS_FIELDS_BUCKET_IN_TABLE + i * DB_FIELD_SIZE_IN_FIELD_BUCKET;
             if(db_set_value_in_fields_bucket(db->fd, field_pos, j, value) == DB_FAILURE)

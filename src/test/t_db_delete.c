@@ -23,14 +23,7 @@ int main()
     {
         U8bit * field_name[] = {"hung_id"};
         U8bit * value[] = {"hung1"};
-        if(db_insert(db, "test_table", field_name, value, 1) == DB_SUCCESS)
-        {
-            printf("Success!\n");
-        }else
-        {
-            printf("Fail\n");
-            DB_TRACE(("Error_no: %s\n", db_error_str[db_error_no]));
-        }
+        
     }
 
     db_close(db);

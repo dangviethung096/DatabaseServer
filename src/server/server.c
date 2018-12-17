@@ -77,6 +77,7 @@ void * thread_function(void *arg)
                 // receive request from client
                 // int num_rev = 
                 recv(events[count].data.fd, buffer, BUFFER_SIZE, 0);
+                
                 if(strncmp(buffer, STRING_END_CONNECT, LENGTH_END_CONNECT) == 0)
                 {
                    // Delete socket out epoll_fd
@@ -113,7 +114,7 @@ int listen_clients(){
         // set up to epoll listen event
         ev.data.fd = accept_fd;
         ev.events = EPOLLIN;
-        if(epoll_ctl(epoll_fd, EPOLL_CTL_ADD, accept_fd, &ev))
+        if(epoll_ctl(epoll_fd, EPOLL_CTL_ADD, accept_fd, &ev) == -1)
         {
             perror("Cannot add new fd to epoll_fds\n");
         }

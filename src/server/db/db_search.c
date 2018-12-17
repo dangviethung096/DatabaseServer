@@ -143,7 +143,7 @@ db_boolean_t db_search(DATABASE db, U8bit * table_name, U8bit * field_name[], in
     
     for (i = 0; i < num_ret_row; i++)
     {
-        DB_TRACE(("DB:db_search: row_index = %d\n", row_index));
+        DB_TRACE(("DB:db_search: row_index = %d\n", row_ids[i]));
         (*ret)[i].field_names = (U8bit **) db_alloc(num_field * sizeof(U8bit *) );
         (*ret)[i].values = (U8bit **)db_alloc(num_field * sizeof(U8bit *));
         for(j = 0; j < num_field; j++)
@@ -177,10 +177,9 @@ db_boolean_t db_search(DATABASE db, U8bit * table_name, U8bit * field_name[], in
             DB_TRACE(("DB:db_search: field_name = %s, value = %s at i = %d, j = %d\n", (*ret)[i].field_names[j], (*ret)[i].values[j], i, j));
         }
         // Plus one row
-        DB_TRACE(("DB:db_search: num_row = %d\n", num_row));
         (*ret)[i].num_ret = num_ret_row;
         
     }
-
+    DB_TRACE(("DB:db_search: num_ret_row = %d\n", num_ret_row));
     return DB_SUCCESS;
 }

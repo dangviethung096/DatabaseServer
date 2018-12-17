@@ -24,7 +24,7 @@ int main()
     db_condition_t cond;
     cond.operator_conditions[0] = DB_COND_EQUAL;
     cond.field_conditions[0] = "hung_id";
-    cond.val_conditions[0] = "say_yes";
+    cond.val_conditions[0] = "hung1";
     cond.num_cond = 1;
     db_search_ret_t * ret;
     if(db_search(db, "test_table", field_name, num_field, &cond, &ret) == DB_SUCCESS)

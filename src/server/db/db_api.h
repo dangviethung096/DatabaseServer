@@ -17,8 +17,10 @@ db_table_info * db_create_table(DATABASE db, char *table_name, db_field_t * fiel
 db_boolean_t db_remove_table(DATABASE db, char *table_name);
 db_boolean_t db_insert(DATABASE db, U8bit * table_name, U8bit * field_name[], U8bit * value[], int num_value);
 db_boolean_t db_search(DATABASE db, U8bit *table_name, U8bit *field_name[], int num_field, db_condition_t *cond, db_search_ret_t **ret);
+db_boolean_t db_update(DATABASE db, U8bit * table_name, U8bit * field_names[], U8bit * update_values[], int num_field, db_condition_t * cond);
+db_boolean_t db_delete(DATABASE db, U8bit * table_name, db_condition_t * cond);
 void db_close(DATABASE db);
 /* API design */
-// 
+
 
 #endif

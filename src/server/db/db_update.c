@@ -113,6 +113,7 @@ db_boolean_t db_update(DATABASE db, U8bit * table_name, U8bit * field_names[], U
             {
                 return DB_FAILURE;
             }
+
             // Init new value
             db_value_field_t value;
             value.flag = DB_FLAG_USED;
@@ -124,6 +125,20 @@ db_boolean_t db_update(DATABASE db, U8bit * table_name, U8bit * field_names[], U
             {
                 return DB_FAILURE;
             }
+
+            // Insert to rows bucket
+            off_t field_pos = db_point_to_fields_bucket_by_index(db->fd, table->position_table, field_indexes[j]);
+            if(field_pos == -1)
+            {
+                return DB_FAILURE;
+            }
+
+            off_t val_pos = db_point_to_fields_bucket_by_value_index(db->fd, field_pos, new_value_index);
+            if(val_pos == -1)
+            {
+                return DB_FAILURE;
+            }
+
         }
     }
 
