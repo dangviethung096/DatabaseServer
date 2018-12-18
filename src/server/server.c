@@ -2,7 +2,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "../lib/constants.h"
 #include <stdlib.h>
 #include <string.h>
 #include <sys/epoll.h>
@@ -10,7 +9,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
+#include "lib/server_def.h"
 
 char buffer[BUFFER_SIZE];
 

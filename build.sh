@@ -138,6 +138,20 @@ BUILD_T_DB_UPDATE()
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_update.o -o ${BIN_PATH}/t_db_update.out
 }
 
+
+BUILD_SERVER()
+{
+	printf "\n\n=============================================================================\n"
+	echo "${CC} -Wall -g ${SERVER_PATH}/server.c -o ${BIN_PATH}/server -lpthread"
+	${CC} -Wall -g ${SERVER_PATH}/server.c -o ${BIN_PATH}/server -lpthread
+}
+
+BUILD_CLIENT()
+{
+	printf "\n\n=============================================================================\n"
+	echo "${CC} -Wall -g ${CLIENT_PATH}/client.c -o ${BIN_PATH}/client"
+	${CC} -Wall -g ${CLIENT_PATH}/client.c -o ${BIN_PATH}/client
+}
 BUILD_TEST()
 {
 	printf "\nBUILD_DB"
@@ -162,6 +176,10 @@ BUILD_TEST()
 	BUILD_T_DB_DELETE
 	printf "\nBUILD_T_DB_UPDATE"
 	BUILD_T_DB_UPDATE
+	printf "\nBUILD_SERVER"
+	BUILD_SERVER
+	printf "\nBUILD_CLIENT"
+	BUILD_CLIENT
 }
 #####################################################
 #SECTION 3: RULES
