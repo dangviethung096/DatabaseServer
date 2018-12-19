@@ -47,7 +47,7 @@ db_boolean_t db_search(DATABASE db, U8bit * table_name, U8bit * field_name[], in
         row_ids[i] = -1;    
     }
     /* Search field_index */
-    if(cond != DB_NULL)
+    if(cond->num_cond > 0)
     {
         /* Choose value from condition */
         int num_condition = cond->num_cond;

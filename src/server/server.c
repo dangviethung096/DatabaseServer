@@ -10,6 +10,11 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include "lib/server_def.h"
+#include "db/db_struct.h"
+#include "db/db_api.h"
+#include "db/db_global.h"
+
+DATABASE db;
 
 char buffer[BUFFER_SIZE];
 
@@ -84,6 +89,7 @@ void * thread_function(void *arg)
                     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[count].data.fd, NULL);
                 }else 
                 {
+                    
                     // buffer[num_rev - 1] = '\0';
                     start_new_process(buffer, events[count].data.fd);
                 }
@@ -180,6 +186,14 @@ int start_server()
  */
 int main()
 {
+    /* Open database */
+    db = db_open("test_database", "../data", DB_OPEN);
+    if(db == DB_NULL)
+    {
+        SERVER_TRACE(("SERVER:main: cannot open db, %s\n", db_error_str[db_error_no]));
+        return 1;
+    }
+
     if(start_server()){
         printf("server started!\n");
     }

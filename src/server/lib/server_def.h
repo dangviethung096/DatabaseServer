@@ -15,7 +15,7 @@
 #endif
 
 /* START: Using for both server and client */
-#define BUFFER_SIZE 50
+#define BUFFER_SIZE 1024
 
 #define EPOLL_SIZE 15
 #define EPOLL_MAX_EVENT EPOLL_SIZE
