@@ -10,16 +10,12 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include "lib/server_def.h"
-#include "db/db_struct.h"
+#include "lib/server_global.h"
 #include "db/db_api.h"
-#include "db/db_global.h"
+#include "lib/process_message.h"
 
-DATABASE db;
-
-char buffer[BUFFER_SIZE];
 
 struct epoll_event events[EPOLL_MAX_EVENT];
-pid_t children_process[MAX_CHILDREN_PROCESS];
 int server_fd, epoll_fd;
 int isExit = 0;
 
@@ -31,9 +27,10 @@ int isExit = 0;
     RETURN VALUE:
 
  */
-int start_new_process(char *command, int client_fd)
+
+int start_new_process(char * command, int client_fd)
 {
-     // using fork to make a new process
+    // using fork to make a new process
     pid_t child_proc = fork();
 
     if(child_proc == 0)         //child process
@@ -62,6 +59,7 @@ void * thread_function(void *arg)
 {
     printf("Start wait event from sub_thread!\n");
     int number_event;
+    int num_rev, num_send;
     while(!isExit)
     {
         //wait client
@@ -79,19 +77,25 @@ void * thread_function(void *arg)
             if(events[count].events & EPOLLIN)
             {
                 // receive request from client
-                // int num_rev = 
-                recv(events[count].data.fd, buffer, BUFFER_SIZE, 0);
+                num_rev = recv(events[count].data.fd, msg, BUFFER_SIZE, 0);
                 
-                if(strncmp(buffer, STRING_END_CONNECT, LENGTH_END_CONNECT) == 0)
+                if(strncmp(msg, STRING_END_CONNECT, LENGTH_END_CONNECT) == 0 || num_rev == 0)
                 {
                    // Delete socket out epoll_fd
-                    printf("Delete %d out epoll_fd\n",events[count].data.fd);
+                    printf("SERVER:Delete %d out epoll_fd\n",events[count].data.fd);
                     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[count].data.fd, NULL);
                 }else 
                 {
-                    
-                    // buffer[num_rev - 1] = '\0';
-                    start_new_process(buffer, events[count].data.fd);
+                    // Call an api will decode message and call api in search
+                    int ret_pos = process_message(msg, ret_msg);
+                    if(ret_pos <= 0)
+                    {
+                        ret_msg[0] = ERROR_CODE;
+                        ret_pos = 1;
+                    }
+                    // Return buffer
+                    num_send = send(events[count].data.fd, ret_msg, ret_pos, 0);
+                    printf("SERVER:fd=%d, num_send=%d\n", events[count].data.fd, num_send);
                 }
             }
         }
@@ -177,6 +181,7 @@ int start_server()
     epoll_fd =  epoll_create(EPOLL_SIZE);
     return 1;
 }
+
 /* 
     FUNCTION : main
     DESCRIPTION:
@@ -184,10 +189,11 @@ int start_server()
     RETURN VALUE:
 
  */
+
 int main()
 {
     /* Open database */
-    db = db_open("test_database", "../data", DB_OPEN);
+    db = db_open("test_database", "../data/", DB_OPEN);
     if(db == DB_NULL)
     {
         SERVER_TRACE(("SERVER:main: cannot open db, %s\n", db_error_str[db_error_no]));

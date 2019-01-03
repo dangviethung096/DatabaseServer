@@ -7,7 +7,7 @@
 // typedef unsigned int    U32bit;
 
 /* START: Struct using for both: server and client */
-typedef U8bit           command_code_t;
+
 
 
 /* END: Struct using for both: server and client */

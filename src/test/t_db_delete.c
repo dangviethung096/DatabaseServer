@@ -26,9 +26,9 @@ int main()
         db_condition_t cond;
         cond.num_cond = 1;
         cond.operator_conditions[0] = DB_COND_EQUAL;
-        cond.field_conditions[0] = "hung_id";
-        cond.val_conditions[0] = "hung1";
-        if(db_delete(db, "test_table", &cond) == DB_SUCCESS)
+        cond.field_conditions[0] = "id";
+        cond.val_conditions[0] = "1";
+        if(db_delete(db, "student", &cond) == DB_SUCCESS)
         {
             printf("Delete success!\n");
         }else{

@@ -29,8 +29,8 @@
 
 /* START: define max length, size, vv..v */
 #define DB_MAX_LENGTH_DATABASE_PATH    256
-#define DB_MAX_ROWS_IN_BUCKET          7         // It must be a prime number because algorithm hashing
-#define DB_MAX_FIELDS_IN_TABLE         3         // It must be a prime number because algorithm hashing
+#define DB_MAX_ROWS_IN_BUCKET          4099         // It must be a prime number because algorithm hashing
+#define DB_MAX_FIELDS_IN_TABLE         1031         // It must be a prime number because algorithm hashing
 #define DB_MAX_INDEX_FIELDS            4
 #define DB_MAX_SIZE_IN_VALUE           sizeof(struct db_value)
 

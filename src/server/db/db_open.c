@@ -25,7 +25,7 @@
  */
 static inline int db_open_file(char *file,int flag, int mode)
 {
-    // DB_TRACE(("DB:db_open_file:file = %s,flag = %d,mode = %d\n", file, flag, mode));
+    DB_TRACE(("DB:db_open_file:file = %s,flag = %d,mode = %d\n", file, flag, mode));
     return open(file, flag, mode);
 }
 

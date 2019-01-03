@@ -19,16 +19,16 @@ int main()
         return 0;
     }
 
-    U8bit * field_name[] = {"hung_id", "thanh_id"};
-    int num_field = 2;
+    U8bit * field_name[] = {"id", "full_name"};
+    int num_field = 0;
     db_condition_t cond;
     cond.num_cond = 0;
     cond.operator_conditions[0] = DB_COND_EQUAL;
     cond.field_conditions[0] = "hung_id";
     cond.val_conditions[0] = "hung1";
-    cond.num_cond = 1;
+    cond.num_cond = 0;
     db_search_ret_t * ret;
-    if(db_search(db, "test_table", field_name, num_field, &cond, &ret) == DB_SUCCESS)
+    if(db_search(db, "student", field_name, num_field, &cond, &ret) == DB_SUCCESS)
     {
         printf("Search Success with number return %d\n", ret[0].num_ret);
         int i, j;

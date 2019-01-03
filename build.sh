@@ -15,9 +15,11 @@ DB_SOURCE_PATH=${SOURCE_PATH}/server/db
 RM=rm
 CC=gcc
 FLAGS="-Wall -g"
-MACRO_AT_BUILD="-DDB_TRACE_ENABLE -DDB_ERROR_TRACE_ENABLE"
+MACRO_AT_BUILD=
+#"-DDB_TRACE_ENABLE -DDB_ERROR_TRACE_ENABLE"
+MACRO_SERVER=
+#"-DSERVER_ENABLE_TRACE"
 OBJECT_FILE_DB=
-
 #####################################################
 #SECTION 2: FUNCTIONS
 #####################################################
@@ -90,51 +92,51 @@ BUILD_T_DB_REMOVE_TABLE()
 
 BUILD_T_DB_INSERT()
 {
-	printf "\n\n=============================================================================\n"
-	echo "${CC} -c ${TEST_PATH}/t_db_insert.c -o ${OBJECT_PATH}/t_db_insert.o"
+	#printf "\n\n=============================================================================\n"
+	#echo "${CC} -c ${TEST_PATH}/t_db_insert.c -o ${OBJECT_PATH}/t_db_insert.o"
 	${CC} -c ${TEST_PATH}/t_db_insert.c -o ${OBJECT_PATH}/t_db_insert.o
-	printf "\n\n=============================================================================\n"
-	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_insert.o -o ${BIN_PATH}/t_db_insert.out"
+	#printf "\n\n=============================================================================\n"
+	#echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_insert.o -o ${BIN_PATH}/t_db_insert.out"
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_insert.o -o ${BIN_PATH}/t_db_insert.out
 }
 
 BUILD_T_DB_COMMON_TEST()
 {
-	printf "\n\n=============================================================================\n"
-	echo "${CC} -c ${TEST_PATH}/t_db_common_test.c -o ${OBJECT_PATH}/t_db_common_test.o"
+	#printf "\n\n=============================================================================\n"
+	#echo "${CC} -c ${TEST_PATH}/t_db_common_test.c -o ${OBJECT_PATH}/t_db_common_test.o"
 	${CC} -c ${TEST_PATH}/t_db_common_test.c -o ${OBJECT_PATH}/t_db_common_test.o
-	printf "\n\n=============================================================================\n"
-	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_common_test.o -o ${BIN_PATH}/t_db_common_test.out"
+	#printf "\n\n=============================================================================\n"
+	#echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_common_test.o -o ${BIN_PATH}/t_db_common_test.out"
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_common_test.o -o ${BIN_PATH}/t_db_common_test.out
 }
 
 BUILD_T_DB_SEARCH()
 {
-	printf "\n\n=============================================================================\n"
-	echo "${CC} -c ${TEST_PATH}/t_db_search.c -o ${OBJECT_PATH}/t_db_search.o"
+	#printf "\n\n=============================================================================\n"
+	#echo "${CC} -c ${TEST_PATH}/t_db_search.c -o ${OBJECT_PATH}/t_db_search.o"
 	${CC} -c ${TEST_PATH}/t_db_search.c -o ${OBJECT_PATH}/t_db_search.o
-	printf "\n\n=============================================================================\n"
-	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_search.o -o ${BIN_PATH}/t_db_search.out"
+	#printf "\n\n=============================================================================\n"
+	#echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_search.o -o ${BIN_PATH}/t_db_search.out"
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_search.o -o ${BIN_PATH}/t_db_search.out
 }
 
 BUILD_T_DB_DELETE()
 {
-	printf "\n\n=============================================================================\n"
-	echo "${CC} -c ${TEST_PATH}/t_db_delete.c -o ${OBJECT_PATH}/t_db_delete.o"
+	#printf "\n\n=============================================================================\n"
+	#echo "${CC} -c ${TEST_PATH}/t_db_delete.c -o ${OBJECT_PATH}/t_db_delete.o"
 	${CC} -c ${TEST_PATH}/t_db_delete.c -o ${OBJECT_PATH}/t_db_delete.o
-	printf "\n\n=============================================================================\n"
-	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_delete.o -o ${BIN_PATH}/t_db_delete.out"
+	#printf "\n\n=============================================================================\n"
+	#echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_delete.o -o ${BIN_PATH}/t_db_delete.out"
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_delete.o -o ${BIN_PATH}/t_db_delete.out
 }
 
 BUILD_T_DB_UPDATE()
 {
-	printf "\n\n=============================================================================\n"
-	echo "${CC} -c ${TEST_PATH}/t_db_update.c -o ${OBJECT_PATH}/t_db_update.o"
+	#printf "\n\n=============================================================================\n"
+	#echo "${CC} -c ${TEST_PATH}/t_db_update.c -o ${OBJECT_PATH}/t_db_update.o"
 	${CC} -c ${TEST_PATH}/t_db_update.c -o ${OBJECT_PATH}/t_db_update.o
-	printf "\n\n=============================================================================\n"
-	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_update.o -o ${BIN_PATH}/t_db_update.out"
+	#printf "\n\n=============================================================================\n"
+	#echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_update.o -o ${BIN_PATH}/t_db_update.out"
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/t_db_update.o -o ${BIN_PATH}/t_db_update.out
 }
 
@@ -142,16 +144,18 @@ BUILD_T_DB_UPDATE()
 BUILD_SERVER()
 {
 	printf "\n\n=============================================================================\n"
-	echo "${CC} -Wall -g ${SERVER_PATH}/server.c -o ${BIN_PATH}/server -lpthread"
-	${CC} -Wall -g ${SERVER_PATH}/server.c -o ${BIN_PATH}/server -lpthread
+	echo "${CC} -c ${SERVER_PATH}/server.c -o ${OBJECT_PATH}/server.o -lpthread"
+	${CC} -c ${SERVER_PATH}/server.c -o ${OBJECT_PATH}/server.o -lpthread
+	echo "${CC} -c ${SERVER_PATH}/server_global.c -o ${OBJECT_PATH}/server_global.o"
+	${CC} -c ${SERVER_PATH}/server_global.c -o ${OBJECT_PATH}/server_global.o
+	echo "${CC} -c ${SERVER_PATH}/process_message.c -o ${OBJECT_PATH}/process_message.o ${MACRO_SERVER}"
+	${CC} -c ${SERVER_PATH}/process_message.c -o ${OBJECT_PATH}/process_message.o ${MACRO_SERVER}
+	
+	printf "\n\n=============================================================================\n"
+	echo "${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/server.o ${OBJECT_PATH}/server_global.o ${OBJECT_PATH}/process_message.o -o ${BIN_PATH}/server.out -lpthread ${MACRO_SERVER}"
+	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/server.o ${OBJECT_PATH}/server_global.o ${OBJECT_PATH}/process_message.o -o ${BIN_PATH}/server.out -lpthread ${MACRO_SERVER}
 }
 
-BUILD_CLIENT()
-{
-	printf "\n\n=============================================================================\n"
-	echo "${CC} -Wall -g ${CLIENT_PATH}/client.c -o ${BIN_PATH}/client"
-	${CC} -Wall -g ${CLIENT_PATH}/client.c -o ${BIN_PATH}/client
-}
 BUILD_TEST()
 {
 	printf "\nBUILD_DB"
@@ -178,8 +182,7 @@ BUILD_TEST()
 	BUILD_T_DB_UPDATE
 	printf "\nBUILD_SERVER"
 	BUILD_SERVER
-	printf "\nBUILD_CLIENT"
-	BUILD_CLIENT
+	printf "\n"
 }
 #####################################################
 #SECTION 3: RULES

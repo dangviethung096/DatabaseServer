@@ -19,7 +19,7 @@
             strlen((const char *) str)
 
 #define db_length_str(str)                  \
-            strlen((const char *) str) + 1
+            (strlen((const char *) str) + 1)
 
 long int db_find_nearest_prime_number(long int input);
 #define DB_FIND_INT_PRIME_NUMBER(input)            \

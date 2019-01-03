@@ -8,9 +8,7 @@
 
 #else
 
-#define SERVER_TRACE()
-
-#define SERVER_TRACE(str)   
+#define SERVER_TRACE(str)
 
 #endif
 
@@ -27,23 +25,43 @@
 #define STRING_END_CONNECT "exit"
 #define LENGTH_END_CONNECT strlen(STRING_END_CONNECT)
 
-#define COMMAND_CODE_SIZE    sizeof(command_code_t)
 
+#define MSG_END             0
 
 /* API code */
+
+
 #define SEARCH_CODE         1
 #define INSERT_CODE         2
 #define UPDATE_CODE         3 
 #define DELETE_CODE         4
 
+#define RET_SEARCH_CODE     5
+#define RET_INSERT_CODE     6
+#define RET_UPDATE_CODE     7
+#define RET_DELETE_CODE     8
 
-/* Position in message */
-#define POS_COMMAND_CODE    0
+#define COMMAND_CODE        10
+
+#define ERROR_CODE          15
+
+#define SEARCH_STR              "SELECT"
+#define SEARCH_TABLE_STR        "FROM"
+#define SEARCH_COND_STR         "WHERE"
 
 
-/* For search command */
-#define POS_SEARCH_TABLE_NAME   POS_COMMAND_CODE + COMMAND_CODE_SIZE
+#define INSERT_STR          "INSERT"
+#define INSERT_VALUES_STR   "VALUES"
+#define RET_INSERT_STR      "Insert success!"
+
+
+#define UPDATE_STR          "UPDATE"
+#define DELETE_STR          "DELETE"
+
+#define MAX_LENGTH_MSG      BUFFER_SIZE
 
 /* END: Using for both server and client */
+
+
 
 #endif

@@ -115,6 +115,7 @@ typedef struct {
     U8bit   **   field_names;
     U8bit   **   values;
     int          num_ret;
+    int          num_field;
 }db_search_ret_t;
 
 
