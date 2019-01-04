@@ -6,18 +6,51 @@
 #include <string.h>
 #include <stdlib.h>
 
-void read_message(U8bit * message, int * pos, U8bit * val, int size)
+static inline void read_message(U8bit * message, int * pos, U8bit * val, int size)
 {
     memcpy(val, message + *pos, size);
     SERVER_TRACE(("SERVER:read_message:pos=%d, size=%d\n", *pos, size));
     *pos += size;
 }
 
-void write_message(U8bit * message, int * pos, U8bit * val, int size)
+static inline void write_message(U8bit * message, int * pos, U8bit * val, int size)
 {
     memcpy(message + *pos, val, size);
     SERVER_TRACE(("SERVER:write_message:pos=%d, size=%d\n", *pos, size));
     *pos += size;
+}
+
+static inline int process_msg_condition(U8bit * message, int pos, db_condition_t * cond)
+{
+    /* Declare variable */
+    int i;
+    U8bit num_cond;
+    U8bit length_field, length_val;
+    /* Read number condition */
+    read_message(message, &pos, &num_cond, DB_U_8_BIT_SIZE);
+    cond->num_cond = num_cond;
+    SERVER_TRACE(("SERVER:process_msg_condition:num_cond=%d\n", cond->num_cond));
+    /* Read condition */
+    for(i = 0; i < num_cond; i++)
+    {
+        // Read length of field
+        read_message(message, &pos, &length_field, DB_U_8_BIT_SIZE);
+        // Read field condition
+        cond->field_conditions[i] = (U8bit *) malloc(DB_U_8_BIT_SIZE * (length_field + 1));
+        read_message(message, &pos, cond->field_conditions[i], length_field);
+        cond->field_conditions[i][length_field] = '\0';
+        SERVER_TRACE(("SERVER:process_msg_condition:field_condition[%d]=%s\n", i, cond->field_conditions[i]));
+        // Read length of value
+        read_message(message, &pos, &length_val, DB_U_8_BIT_SIZE);
+        // Read value condition
+        cond->val_conditions[i] = (U8bit *) malloc(DB_U_8_BIT_SIZE * (length_val + 1));
+        read_message(message, &pos, cond->val_conditions[i], length_val);
+        cond->val_conditions[i][length_val] = '\0';
+        SERVER_TRACE(("SERVER:process_msg_condition:val_condition[%d]=%s\n", i, cond->val_conditions[i]));
+        cond->operator_conditions[i] = DB_COND_EQUAL;
+    }
+
+    return pos;
 }
 
 int process_msg_search(U8bit * message, U8bit * ret_message)
@@ -56,32 +89,13 @@ int process_msg_search(U8bit * message, U8bit * ret_message)
         SERVER_TRACE(("SERVER:process_msg_search:pos=%d, columns[%d]=%s\n", pos, i, columns[i]));
     }
 
-    // Read condition
-    U8bit num_cond = *(message + pos);
-    cond.num_cond = num_cond;
-    if(num_cond > 0)
+    /* Read condition */
+    pos = process_msg_condition(message, pos, &cond);
+    if(pos == -1)
     {
-        for(i = 0; i < num_cond; i++)
-        {
-            U8bit length_field, length_val;
-            // Read length field
-            read_message(message, &pos, &length_field, DB_U_8_BIT_SIZE);
-            // Read field
-            cond.field_conditions[i] = (U8bit *) malloc(DB_MAX_LENGTH_FIELD_NAME);
-            read_message(message, &pos, cond.field_conditions[i], length_field);
-            cond.field_conditions[i][length_field] = '\0';
-
-            // Read length val
-            read_message(message, &pos, &length_val, DB_U_8_BIT_SIZE);
-            // Read val
-            cond.val_conditions[i] = (U8bit *) malloc(DB_MAX_SIZE_IN_VALUE);
-            read_message(message, &pos, cond.val_conditions[i], length_val);
-            cond.val_conditions[i][length_val] = '\0';
-
-            cond.operator_conditions[i] = DB_COND_EQUAL;
-        }
+        SERVER_TRACE(("SERVER:process_msg_search:pos=%d\n", pos));
+        return -1;
     }
-
     /* Search data in table */
     db_search_ret_t * ret = NULL;
     if(db_search(db, table_name, columns, num_col, &cond, &ret) == DB_FAILURE)
@@ -134,7 +148,16 @@ int process_msg_search(U8bit * message, U8bit * ret_message)
     
     U8bit end = '\0';
     write_message(ret_message, &ret_pos, &end, DB_U_8_BIT_SIZE);
+    
     // Free mem
+    for(i = 0; i < cond.num_cond; i++)
+    {
+        SERVER_TRACE(("SERVER:process_msg_search:Free field_condition[%d]!\n", i));
+        free(cond.field_conditions[i]);
+        SERVER_TRACE(("SERVER:process_msg_search:Free val_condition[%d]!\n", i));
+        free(cond.val_conditions[i]);
+    }
+
     for(i = 0; i < num_field; i++)
     {
         free(columns[i]);
@@ -146,9 +169,41 @@ int process_msg_search(U8bit * message, U8bit * ret_message)
 
 int process_msg_delete(U8bit * msg, U8bit * ret_msg)
 {
-    /* Parse message for delete in db */
+    /* Declare variable */
+    SERVER_TRACE(("SERVER:process_msg_delete:msg=%s\n", msg));
     int ret_pos = 0;
+    int pos = 0;
+    U8bit table_name[DB_MAX_LENGTH_TABLE_NAME];
+    U8bit length_table_name = 0;
+    db_condition_t cond;
+    /* Read table name */
+    // Read length of table name
+    read_message(msg, &pos, &length_table_name, DB_U_8_BIT_SIZE);
+    // Read table name
+    read_message(msg, &pos, table_name, length_table_name);
+    table_name[length_table_name] = '\0';
+    SERVER_TRACE(("SERVER:process_msg_delete:table_name=%s\n", table_name));
+    /* Read condition: using a different function */
+    pos = process_msg_condition(msg, pos, &cond);
+    if(pos == -1)
+    {
+        return -1;
+    }
 
+    if(db_delete(db, table_name, &cond) == DB_FAILURE)
+    {
+        SERVER_TRACE(("SERVER:process_msg_delete:Delete fail!"));
+    }
+
+    // Write return code
+    U8bit ret_code = RET_DELETE_CODE;
+    write_message(ret_msg, &ret_pos, &ret_code, DB_U_8_BIT_SIZE);
+    U8bit * ret_info = "Delete successfull";
+    U8bit length_ret_info = strlen(ret_info);
+    // Write length of return info
+    write_message(ret_msg, &ret_pos, &length_ret_info, DB_U_8_BIT_SIZE);
+    // Write return info
+    write_message(ret_msg, &ret_pos, ret_info, length_ret_info);
     return ret_pos;
 }
 
@@ -208,7 +263,7 @@ int process_msg_insert(U8bit * msg, U8bit * ret_msg)
     
     if(db_insert(db, table_name, columns, values, num_col) == DB_FAILURE)
     {
-        SERVER_TRACE(("SERVER:process_msg_insert: Error insert!\n"));
+        SERVER_TRACE(("SERVER:process_msg_insert:Error insert!\n"));
         return -1;
     }
     // Free memory

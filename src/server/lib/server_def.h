@@ -56,7 +56,10 @@
 
 
 #define UPDATE_STR          "UPDATE"
+
+
 #define DELETE_STR          "DELETE"
+#define DELETE_COND_STR     "WHERE"
 
 #define MAX_LENGTH_MSG      BUFFER_SIZE
 

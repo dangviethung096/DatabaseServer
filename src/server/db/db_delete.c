@@ -44,33 +44,48 @@ db_boolean_t db_delete(DATABASE db, U8bit * table_name, db_condition_t * cond)
     if(cond != DB_NULL)
     {
         /* Get rows on condition */
-         int num_condition = cond->num_cond;
+        int num_condition = cond->num_cond;
         DB_TRACE(("DB:db_delete: num_condition = %d\n", num_condition));
-        for (i = 0; i < num_condition; i++)
+        if(cond->num_cond > 0)
         {
-            int cond_field_index = db_get_index_field_in_fields_bucket_by_field_name(db->fd, table, cond->field_conditions[i]);
-            DB_TRACE(("DB:db_delete:condition = %d\n", i));
-            switch (cond->operator_conditions[i])
+            for (i = 0; i < num_condition; i++)
             {
-                case DB_COND_EQUAL:
-                    if(db_search_row_with_equal_condition(db->fd, table->position_table, cond_field_index, cond->val_conditions[i], row_ids, &num_row) == DB_FAILURE)
-                    {
+                int cond_field_index = db_get_index_field_in_fields_bucket_by_field_name(db->fd, table, cond->field_conditions[i]);
+                DB_TRACE(("DB:db_delete:condition = %d\n", i));
+                switch (cond->operator_conditions[i])
+                {
+                    case DB_COND_EQUAL:
+                        if(db_search_row_with_equal_condition(db->fd, table->position_table, cond_field_index, cond->val_conditions[i], row_ids, &num_row) == DB_FAILURE)
+                        {
+                            return DB_FAILURE;
+                        }
+                        break;
+                    default:
+                        DB_TRACE(("DB:db_delete: CANNOT detect condition's operator, %d\n", cond->operator_conditions[i]));
+                        DB_SET_ERROR(DB_OUT_OF_BOUNDS);
                         return DB_FAILURE;
-                    }
-                    break;
-                default:
-                    DB_TRACE(("DB:db_delete: CANNOT detect condition's operator, %d\n", cond->operator_conditions[i]));
-                    DB_SET_ERROR(DB_OUT_OF_BOUNDS);
-                    return DB_FAILURE;
-            }
+                }
 
+            }
+        }else if(cond->num_cond == 0)
+        {
+            // Delete all row_id
+            for(i = 1; i <= DB_MAX_ROWS_IN_BUCKET && num_row < table->num_rows; i++)
+            {
+                if(db_is_row_in_rows_bucket_used(db->fd, table->position_table, i) == DB_TRUE)
+                {
+                    row_ids[num_row++] = i;
+                }
+            }
         }
+        
     }else
     {
         DB_TRACE(("DB:db_delete: Wrong parameter\n"));
         DB_SET_ERROR(DB_ERROR_WRONG_PARAM);
         return DB_FAILURE;
     }
+
     /* Delete value */
     for(i = 0; i < num_row; i++)
     {
@@ -94,6 +109,7 @@ db_boolean_t db_delete(DATABASE db, U8bit * table_name, db_condition_t * cond)
                 DB_TRACE(("DB:db_delete: Delete value in field_index = %d, value_index = %d\n", j, value_index));
             }
         }
+        
         if(db_remove_row_in_rows_bucket(db->fd, table->position_table, row_ids[i]) == DB_FAILURE)
         {
             return DB_FAILURE;
