@@ -209,10 +209,80 @@ int process_msg_delete(U8bit * msg, U8bit * ret_msg)
 
 int process_msg_update(U8bit * msg, U8bit * ret_msg)
 {
-    /* Parse message for update in db */
+    SERVER_TRACE(("SERVER:process_msg_update:msg=%s\n", msg));
+    /* Declare variable */
+    U8bit table_name[DB_MAX_LENGTH_TABLE_NAME];
+    U8bit length_table_name = 0;
+    U8bit * field_update[DB_MAX_FIELDS_IN_TABLE];
+    U8bit * val_update[DB_MAX_FIELDS_IN_TABLE];
     int ret_pos = 0;
+    int pos = 0;
+    U8bit num_update = 0;
+    int i;
+    /* Read table name */
+    // Read length of table name
+    read_message(msg, &pos, &length_table_name, DB_U_8_BIT_SIZE);
+    // Read table name
+    read_message(msg, &pos, table_name, length_table_name);
+    table_name[length_table_name] = '\0';
+    SERVER_TRACE(("SERVER:process_msg_update:table_name=%s\n", table_name));
+    /* Read update value */
+    // Read number update value
+    read_message(msg, &pos, &num_update, DB_U_8_BIT_SIZE);
+    SERVER_TRACE(("SERVER:process_msg_update:num_update=%d\n", num_update));
+    // Read values update
+    for(i = 0; i < num_update; i++)
+    {
+        // Read length of field update
+        U8bit length_update_field = 0;
+        read_message(msg, &pos, &length_update_field, DB_U_8_BIT_SIZE);
+        // Read field update
+        field_update[i] = (U8bit *) malloc(DB_U_8_BIT_SIZE * DB_MAX_LENGTH_FIELD_NAME);
+        read_message(msg, &pos, field_update[i], length_update_field);
+        field_update[i][length_update_field] = '\0';
+        SERVER_TRACE(("SERVER:process_msg_update:field_update[%d]=%s\n", i, field_update[i]));
+        // Read length of val update
+        U8bit length_update_val = 0;
+        read_message(msg, &pos, &length_update_val, DB_U_8_BIT_SIZE);
+        // Read val update 
+        val_update[i] = (U8bit *) malloc(DB_U_8_BIT_SIZE * DB_MAX_SIZE_IN_VALUE);
+        read_message(msg, &pos, val_update[i], length_update_val);
+        val_update[i][length_update_val] = '\0';
+        SERVER_TRACE(("SERVER:process_msg_update:val_update[%d]=%s\n", i, val_update[i]));
+    }
+    /* Read condition */
+    db_condition_t cond;
+    pos = process_msg_condition(msg, pos, &cond);
 
+    /* Update value */
+    if(db_update(db, table_name, field_update, val_update, num_update, &cond) == DB_FAILURE)
+    {
+        SERVER_TRACE(("SERVER:process_msg_update:ERROR in update\n"));
+        return -1;
+    }
+    /* Write return message */
+    // Write code message return
+    U8bit ret_code = RET_UPDATE_CODE;
+    write_message(ret_msg, &ret_pos, &ret_code, DB_U_8_BIT_SIZE);
+    // Write length of return value
+    U8bit * ret_success = "Update success!";
+    U8bit length_ret_success = strlen((char *) ret_success);
+    write_message(ret_msg, &ret_pos, &length_ret_success, DB_U_8_BIT_SIZE);
+    // Write return value to message
+    write_message(ret_msg, &ret_pos, ret_success, length_ret_success);
+    
+    /* Free memory */
+    for(i = 0; i < num_update; i++)
+    {
+        free(field_update[i]);
+        free(val_update[i]);
+    }
 
+    for(i = 0; i < cond.num_cond; i++)
+    {
+        free(cond.field_conditions[i]);
+        free(cond.val_conditions[i]);
+    }
     return ret_pos;
 }
 
