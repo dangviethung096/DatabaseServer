@@ -4,6 +4,8 @@
 #include "../server/db/db_global.h"
 #include "../server/db/db_api.h"
 #include "../server/db/db_alloc.h"
+#include "t_db_const.h"
+#include <time.h>
 int main()
 {
     DATABASE db = db_open("test_database", "../data/", DB_OPEN);
@@ -18,8 +20,18 @@ int main()
         printf("Open Fail!\n");
         return 0;
     }
+    
+    int i;
+    FILE * file = fopen("../data/data.txt", "rb");
 
-    U8bit * field_name[] = {"id", "full_name"};
+    U8bit * field_name[NUM_COLS];
+    for(i = 0; i < NUM_COLS; i++)
+    {
+        field_name[i] = malloc(MAX_VALUE * DB_U_8_BIT_SIZE);
+        fscanf(file, "%s ", field_name[i]);
+    }
+    fclose(file);
+
     int num_field = 0;
     db_condition_t cond;
     cond.num_cond = 0;
@@ -34,11 +46,20 @@ int main()
         int i, j;
         for(i = 0; i < ret[0].num_ret; i++)
         {
-            for(j = 0; j < num_field; j++)
+            for(j = 0; j < ret[0].num_field; j++)
             {
                 printf("field_name = %s, value = %s with i = %d, j = %d\n", ret[i].field_names[j], ret[i].values[j], i, j);
                 // printf("Free value[%d]\n", i);
-                free(ret[i].values[i]);
+            }
+            
+        }
+        
+        for(i = 0; i < ret[0].num_ret; i++)
+        {
+            for(j = 0; j < ret[0].num_field;j ++)
+            {
+                free(ret[i].field_names[j]);
+                free(ret[i].values[j]);
             }
             free(ret[i].values);
             free(ret[i].field_names);
@@ -51,6 +72,11 @@ int main()
         return 0;
     }
 
+    for(i = 0; i < NUM_COLS; i++)
+    {
+        free(field_name[i]);
+    }
+    
     db_close(db);
     return 1;
 }

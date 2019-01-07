@@ -154,6 +154,13 @@ BUILD_SERVER()
 	${CC} ${FLAGS} ${OBJECT_FILE_DB} ${OBJECT_PATH}/server.o ${OBJECT_PATH}/server_global.o ${OBJECT_PATH}/process_message.o -o ${BIN_PATH}/server.out -lpthread ${MACRO_SERVER}
 }
 
+BUILD_GEN_DATA()
+{
+	printf "\n\n=============================================================================\n"
+	echo "${CC} ${FLAGS} ${TEST_PATH}/t_db_gen_data.c -o ${BIN_PATH}/t_db_gen_data.out"
+	${CC} ${FLAGS} ${TEST_PATH}/t_db_gen_data.c -o ${BIN_PATH}/t_db_gen_data.out
+}
+
 BUILD_TEST()
 {
 	printf "\nBUILD_DB"
@@ -180,6 +187,8 @@ BUILD_TEST()
 	BUILD_T_DB_UPDATE
 	printf "\nBUILD_SERVER"
 	BUILD_SERVER
+	printf "\nBUILD_GEN_DATA"
+	BUILD_GEN_DATA
 	printf "\n"
 }
 #####################################################
