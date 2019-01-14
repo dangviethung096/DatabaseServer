@@ -13,6 +13,7 @@
 #endif
 
 /* START: Using for both server and client */
+
 #define BUFFER_SIZE 1024
 
 #define EPOLL_SIZE 15
@@ -42,6 +43,7 @@
 #define RET_DELETE_CODE     8
 
 #define COMMAND_CODE        10
+#define END_CODE            11
 
 #define ERROR_CODE          15
 
@@ -52,19 +54,20 @@
 
 #define INSERT_STR          "INSERT"
 #define INSERT_VALUES_STR   "VALUES"
-#define RET_INSERT_STR      "Insert success!"
-
 
 #define UPDATE_STR          "UPDATE"
-
+#define UPDATE_SET_STR      "SET"
+#define UPDATE_WHERE_STR    "WHERE"
 
 #define DELETE_STR          "DELETE"
 #define DELETE_COND_STR     "WHERE"
+
 
 #define MAX_LENGTH_MSG      BUFFER_SIZE
 
 /* END: Using for both server and client */
 
 
+#define RET_INSERT_STR      "insert successfull"
 
 #endif

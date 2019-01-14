@@ -39,7 +39,7 @@ db_boolean_t db_delete(DATABASE db, U8bit * table_name, db_condition_t * cond)
 
     db_table_info * table = &(db->tables[table_index]);
 
-    int table_num_row = table->num_rows -1;
+    int table_num_row = table->num_rows;
     /* Get condition */
     if(cond != DB_NULL)
     {
@@ -75,8 +75,10 @@ db_boolean_t db_delete(DATABASE db, U8bit * table_name, db_condition_t * cond)
                 if(db_is_row_in_rows_bucket_used(db->fd, table->position_table, i) == DB_TRUE)
                 {
                     row_ids[num_row++] = i;
+                    DB_TRACE(("DB:db_delete:add row = %d\n", i));
                 }
             }
+            DB_TRACE(("DB:db_delete:delete all table, num_row = %d\n", num_row));
         }
         
     }else
@@ -90,9 +92,29 @@ db_boolean_t db_delete(DATABASE db, U8bit * table_name, db_condition_t * cond)
     for(i = 0; i < num_row; i++)
     {
         /* Remove in fields bucket */
-        for(j = 1; j <= DB_MAX_FIELDS_IN_TABLE; j++)
+        // for(j = 1; j <= DB_MAX_FIELDS_IN_TABLE; j++)
+        // {
+        //     int value_index = db_get_value_index_from_rows_bucket(db->fd, table->position_table, row_ids[i], j);
+        //     if(value_index == -1)
+        //     {
+        //         if(db_error_no != DB_NO_ERROR)
+        //         {
+        //             return DB_FAILURE;
+        //         }
+
+        //     }else
+        //     {
+        //         if(db_remove_value_in_field_bucket(db->fd, table->position_table, j, value_index) == DB_FAILURE)
+        //         {
+        //             return DB_FAILURE;
+        //         }
+        //         DB_TRACE(("DB:db_delete: Delete value in field_index = %d, value_index = %d\n", j, value_index));
+        //     }
+        // }
+        
+        for(j = 0; j < table->num_fields; j++)
         {
-            int value_index = db_get_value_index_from_rows_bucket(db->fd, table->position_table, row_ids[i], j);
+            int value_index = db_get_value_index_from_rows_bucket(db->fd, table->position_table, row_ids[i], table->fields[j].index);
             if(value_index == -1)
             {
                 if(db_error_no != DB_NO_ERROR)
@@ -102,26 +124,36 @@ db_boolean_t db_delete(DATABASE db, U8bit * table_name, db_condition_t * cond)
 
             }else
             {
-                if(db_remove_value_in_field_bucket(db->fd, table->position_table, j, value_index) == DB_FAILURE)
+                if(db_remove_value_in_field_bucket(db->fd, table->position_table, table->fields[j].index, value_index) == DB_FAILURE)
                 {
                     return DB_FAILURE;
                 }
                 DB_TRACE(("DB:db_delete: Delete value in field_index = %d, value_index = %d\n", j, value_index));
             }
         }
-        
+
         if(db_remove_row_in_rows_bucket(db->fd, table->position_table, row_ids[i]) == DB_FAILURE)
         {
             return DB_FAILURE;
         }
         DB_TRACE(("DB:db_delete: delete row_id = %d\n", row_ids[i]));
-        // Decrease num row in table
-        table->num_rows = table_num_row;
-        if(db_set_num_row_in_table(db->fd, table->position_table, table_num_row) == DB_FAILURE)
+
+        for(i = 0; i < table->num_fields; i++)
         {
-            return DB_FAILURE;
+            if(db_rehash_field_bucket_by_index(db->fd, table->position_table, table->fields[i].index) == DB_FAILURE)
+            {
+                return DB_FAILURE;
+            }
         }
-        
+    }
+
+    // Decrease num row in table
+    table_num_row -= num_row;
+    table->num_rows = table_num_row;
+    DB_TRACE(("DB:db_delete:num_row = %d\n", table_num_row));
+    if(db_set_num_row_in_table(db->fd, table->position_table, table_num_row) == DB_FAILURE)
+    {
+        return DB_FAILURE;
     }
 
     return DB_SUCCESS;

@@ -68,6 +68,7 @@ db_boolean_t db_update(DATABASE db, U8bit * table_name, U8bit * field_names[], U
         }else if (cond->num_cond == 0)
         {
             /* Get all rows in table */
+            /* Update all row */
             DB_TRACE(("DB:db_update:num condition=0, get all available rows\n"));
             for(i = 0; i <= DB_MAX_ROWS_IN_BUCKET; i++)
             {
@@ -85,7 +86,6 @@ db_boolean_t db_update(DATABASE db, U8bit * table_name, U8bit * field_names[], U
     }
     
     
-    /* Update all row */
     int field_indexes[num_field];
     DB_TRACE(("DB:db_update: get field index\n"));
     // Get field_index
@@ -116,13 +116,6 @@ db_boolean_t db_update(DATABASE db, U8bit * table_name, U8bit * field_names[], U
                 return DB_FAILURE;
             }
 
-            // get new value index
-            int new_value_index = db_get_empty_value_in_field_of_fields_bucket(db->fd, table->position_table, field_indexes[j], update_values[j]);
-            if(new_value_index == -1)
-            {
-                return DB_FAILURE;
-            }
-
             // Init new value
             db_value_field_t value;
             value.flag = DB_FLAG_USED;
@@ -130,25 +123,7 @@ db_boolean_t db_update(DATABASE db, U8bit * table_name, U8bit * field_names[], U
             value.size = db_length_str(update_values[j]);
             memcpy(value.value, update_values[j], value.size);
             // Insert new value
-            if(db_set_value_in_fields_bucket_by_field_index(db->fd, table->position_table, field_indexes[j], new_value_index, value) == DB_FAILURE)
-            {
-                return DB_FAILURE;
-            }
-
-            // Insert to rows bucket
-            off_t field_pos = db_point_to_fields_bucket_by_index(db->fd, table->position_table, field_indexes[j]);
-            if(field_pos == -1)
-            {
-                return DB_FAILURE;
-            }
-
-            off_t val_pos = db_point_to_fields_bucket_by_value_index(db->fd, field_pos, new_value_index);
-            if(val_pos == -1)
-            {
-                return DB_FAILURE;
-            }
-
-            if(db_set_value_pos_in_rows_bucket_by_field_index(db->fd, table->position_table, row_ids[i], field_indexes[j], val_pos) == DB_FAILURE)
+            if(db_set_value_in_fields_bucket_by_field_index(db->fd, table->position_table, field_indexes[j], value_index, value) == DB_FAILURE)
             {
                 return DB_FAILURE;
             }
@@ -156,6 +131,10 @@ db_boolean_t db_update(DATABASE db, U8bit * table_name, U8bit * field_names[], U
         }
     }
 
+    for(i = 0; i < num_field; i++)
+    {
+        db_rehash_field_bucket_by_index(db->fd, table->position_table, field_indexes[i]);
+    }
 
     return DB_SUCCESS;
 }

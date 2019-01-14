@@ -15,9 +15,6 @@
 #include "lib/process_message.h"
 
 
-struct epoll_event events[EPOLL_MAX_EVENT];
-int server_fd, epoll_fd;
-int isExit = 0;
 
 
 /* 
@@ -79,11 +76,13 @@ void * thread_function(void *arg)
                 // receive request from client
                 num_rev = recv(events[count].data.fd, msg, BUFFER_SIZE, 0);
                 
-                if(strncmp(msg, STRING_END_CONNECT, LENGTH_END_CONNECT) == 0 || num_rev == 0)
+                if(num_rev <= 0 || msg[0] == END_CODE)
                 {
-                   // Delete socket out epoll_fd
+                    // Delete socket out epoll_fd
                     printf("SERVER:Delete %d out epoll_fd\n",events[count].data.fd);
                     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, events[count].data.fd, NULL);
+                    printf("SERVER:Disconnection %d\n",events[count].data.fd);
+                    close(events[count].data.fd);
                 }else 
                 {
                     // Call an api will decode message and call api in search
@@ -118,7 +117,7 @@ int listen_clients(){
     while(!isExit)
     {
         int accept_fd = accept(server_fd, NULL, NULL);
-        printf("Have a new client!\n");
+        printf("Have a new client, fd = %d!\n", accept_fd);
         struct epoll_event ev;
         // set up to epoll listen event
         ev.data.fd = accept_fd;

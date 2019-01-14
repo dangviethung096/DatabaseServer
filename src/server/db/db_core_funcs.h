@@ -87,6 +87,7 @@ db_boolean_t db_remove_value_pos_in_rows_bucket(int fd, off_t table_pos, db_inde
 db_boolean_t db_remove_row_in_rows_bucket(int fd, off_t table_pos, db_index_t row_index);
 int db_get_value_index_from_rows_bucket(int fd, int table_pos, int row_index, int field_index);
 
+db_boolean_t db_rehash_field_bucket_by_index(int fd, off_t table_pos, int field_index);
 
 /* START: function with string */
 #define db_strncmp(str1, str2, num)                         \
