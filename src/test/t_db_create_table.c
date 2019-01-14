@@ -30,20 +30,8 @@ int main()
             field[i].field_name[strlen(field_name[i])] = '\0';
         }
         
-<<<<<<< HEAD
-        db_field_t field[3];
-        memcpy(field[0].field_name, "id", strlen("id"));
-        field[0].field_name[strlen("id")] = '\0';
-        memcpy(field[1].field_name, "name", strlen("name"));
-        field[1].field_name[strlen("name")] = '\0';
-        memcpy(field[2].field_name, "age", strlen("age"));
-        field[2].field_name[strlen("age")] = '\0';
-        
-        if(db_create_table(db, "student", field, 3) != NULL)
-=======
         
         if(db_create_table(db, "student", field, 10) != NULL)
->>>>>>> 78e486f8a29c440f716732ce72a13faec21c947d
         {
             printf("Success\n");
         }else
