@@ -5,6 +5,8 @@
 #include "../server/db/db_error.h"
 #include <string.h>
 #include <stdlib.h>
+#include "t_db_const.h"
+
 int main()
 {
     DATABASE db = db_open("test_database", "../data/", DB_OPEN);
@@ -24,7 +26,7 @@ int main()
     {
         
         db_condition_t cond;
-        cond.num_cond = 1;
+        cond.num_cond = 0;
         cond.operator_conditions[0] = DB_COND_EQUAL;
         cond.field_conditions[0] = "id";
         cond.val_conditions[0] = "1";
